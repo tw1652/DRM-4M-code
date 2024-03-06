@@ -1012,7 +1012,7 @@ class GUI(object):
                 self.ZERLabelEntry.insert(0, str(DRM.ZEFreq))
                 self.ZERLabelQEntry.insert(0, str(DRM.ZEQ1))
             msgbox = messagebox.askyesno("Complete", "Retake measurements?") ## Asks for user input if read was okay.
-            if msgbox == True: # If measurements are good, continue
+            if msgbox == False: # If measurements are good, continue
                 break
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'PLACE ORIGINAL IN CAVITY')
@@ -1031,7 +1031,7 @@ class GUI(object):
                 self.ZSRLabelEntry.insert(0, str(DRM.ZSFreq))
                 self.ZSRLabelQEntry.insert(0, str(DRM.ZSQ))
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  ## Asks for user input if read was okay.
-            if msgbox == True:  # If measurements are good, continue
+            if msgbox == False:  # If measurements are good, continue
                 break
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'EMPTY CAVITY')
@@ -1050,7 +1050,7 @@ class GUI(object):
                 self.ZERLabelQ1Entry.insert(0, str(DRM.ZEQ2))
                 self.ZERLabel1Entry.insert(0, str(DRM.ZEFreq1))
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  ## Asks for user input if read was okay.
-            if msgbox == True:  # If measurements are good, continue
+            if msgbox == False:  # If measurements are good, continue
                 break
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'PLACE REPLICA IN CAVITY')
@@ -1069,7 +1069,7 @@ class GUI(object):
                 self.ZRRLabelEntry.insert(0, str(DRM.ZRFreq))
                 self.ZRRLabelQEntry.insert(0, str(DRM.ZRQ))
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  ## Asks for user input if read was okay.
-            if msgbox == True:  # If measurements are good, continue
+            if msgbox == False:  # If measurements are good, continue
                 break
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'EMPTY CAVITY')
@@ -1089,7 +1089,7 @@ class GUI(object):
                 self.ZERLabelQEntry2.insert(0, str(DRM.ZEQ3))
                 self.root.update_idletasks()
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  ## Asks for user input if read was okay.
-            if msgbox == True:  # If measurements are good, continue
+            if msgbox == False:  # If measurements are good, continue
                 break
         DRM.calc(self.ENA)
         self.progress['value'] = 100
