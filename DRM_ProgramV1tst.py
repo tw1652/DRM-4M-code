@@ -313,11 +313,11 @@ class GUI(object):
         self.root = Tk()
         self.status = '0'
         self.rm = pyvisa.ResourceManager()
-        # self.ENA = self.rm.open_resource('GPIB0::16::INSTR')  # ENA-E5061A
-        # self.ENA.Arduino_Serial = serial.Serial('com4', 9600)
-        # self.ENA.MeasurementNum = 0
-        # self.ENA.ChamberState = 'e'
-        # self.ENA.MeasurementTime = [None] * 15
+        self.ENA = self.rm.open_resource('GPIB0::1::INSTR')  # ENA-E5061A
+        self.ENA.Arduino_Serial = serial.Serial('com4', 9600)
+        self.ENA.MeasurementNum = 0
+        self.ENA.ChamberState = 'e'
+        self.ENA.MeasurementTime = [None] * 15
         self.filename = ""
         self.master = self.root
         self.headingFont = 'Helvetica'
@@ -336,11 +336,11 @@ class GUI(object):
 
         #Measurement TAB2
         self.MSFrame = Frame(self.tab2, borderwidth=1)  # Full Frame
-        self.MSFrame.pack(side=TOP, anchor=W)
+        self.MSFrame.pack(side=LEFT, anchor=W)
         self.MFrame = Frame(self.MSFrame, borderwidth=10)  # Measurement Frame
         self.MFrame.pack(side=LEFT, anchor=W)
         self.OFrame = Frame(self.MSFrame, borderwidth=10)  # Output Frame
-        self.OFrame.pack(side=BOTTOM, anchor=N, fill="x")
+        self.OFrame.pack(side=RIGHT, anchor=N, fill="x")
 
         #Parameter TAB1
         self.MSFrame1 = Frame(self.tab1, borderwidth=1)  # Full Frame
