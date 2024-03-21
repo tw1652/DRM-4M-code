@@ -11,6 +11,7 @@ from tkinter import filedialog
 from tkinter import simpledialog
 import time
 import os
+import re
 
 class DRM(object):
 
@@ -314,8 +315,8 @@ class GUI(object):
         self.root = Tk()
         self.status = '0'
         self.rm = pyvisa.ResourceManager()
-        self.ENA = self.rm.open_resource('GPIB0::1::INSTR')  # ENA-E5061A
-        self.ENA.Arduino_Serial = serial.Serial('com4', 9600)
+        self.ENA = self.rm.open_resource('GPIB0::16::INSTR')  # ENA-E5061A
+        self.ENA.Arduino_Serial = serial.Serial('com3', 9600)
         self.ENA.MeasurementNum = 0
         self.ENA.ChamberState = 'e'
         self.ENA.MeasurementTime = [None] * 15
@@ -980,6 +981,7 @@ class GUI(object):
                 DRM.temperature = temp_data[:5]
                 DRM.humidity = temp_data[-5:]
 
+
         # REPLICA
         elif self.ENA.ChamberState == 'r':
             peak_dataZR = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
@@ -1103,7 +1105,7 @@ class GUI(object):
                 msgbox = messagebox.askyesno('Temperature read failed', 'Do you want to try and read again?')
                 if msgbox == False:
                     self.manual = simpledialog.askstring("Manual input", "Please enter temperature manually")
-                    if manual == None or manual == "":
+                    if self.manual == None or self.manual == "":
                         self.TempRead("Not Read")
                     else:
                         self.TempRead(self.manual)
