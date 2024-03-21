@@ -98,7 +98,7 @@ class DRM(object):
 
     def calc(self):
         # volume of cavity
-        vc = 0.274 * 0.3 * 0.336
+        vc = 0.56 * cmath.pi * 0.28 ** 2
 
         #room temperature
         self.Arduino_Serial.write(str.encode('3'))
