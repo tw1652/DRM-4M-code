@@ -956,7 +956,6 @@ class GUI(object):
                 peak_dataZ = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
                 DRM.ZEFreq = peak_dataZ[1]/1000000
                 DRM.ZEQ1 = peak_dataZ[2]
-                self.ENA.MeasurementNum += 1
                 self.ENA.MeasurementTime[2] = time.time()
 
             # Empty 2
@@ -964,7 +963,6 @@ class GUI(object):
                 peak_dataZ1 = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
                 DRM.ZEFreq1 = peak_dataZ1[1]/1000000
                 DRM.ZEQ2 = peak_dataZ1[2]
-                self.ENA.MeasurementNum += 1
                 self.ENA.MeasurementTime[8] = time.time()
 
             # Empty 3
@@ -972,14 +970,7 @@ class GUI(object):
                 peak_dataZ2 = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
                 DRM.ZEFreq2 = peak_dataZ2[1]/1000000
                 DRM.ZEQ3 = peak_dataZ2[2]
-                self.ENA.MeasurementNum += 1
                 self.ENA.MeasurementTime[14] = time.time()
-                self.ENA.Arduino_Serial.write(str.encode('3'))
-                temp_data = self.ENA.Arduino_Serial.readline().decode('utf-8')  # deg. C
-                temp_data = re.sub("[^0-9.]", "", temp_data)
-                time.sleep(2)
-                DRM.temperature = temp_data[:5]
-                DRM.humidity = temp_data[-5:]
 
 
         # REPLICA
@@ -1016,7 +1007,15 @@ class GUI(object):
                 self.ZERLabelQEntry.insert(0, str(DRM.ZEQ1))
             msgbox = messagebox.askyesno("Complete", "Retake measurements?") ## Asks for user input if read was okay.
             if msgbox == False: # If measurements are good, continue
+                self.ENA.MeasurementNum += 1
                 break
+            else:
+                self.VERLabelEntry.delete(0, 'end')
+                self.VERLabelQEntry.delete(0, 'end')
+                self.HERLabelEntry.delete(0, 'end')
+                self.HERLabelQEntry.delete(0, 'end')
+                self.ZERLabelEntry.delete(0, 'end')
+                self.ZERLabelQEntry.delete(0, 'end')
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'PLACE ORIGINAL IN CAVITY')
             if msgbox == 'ok':
@@ -1036,6 +1035,13 @@ class GUI(object):
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  ## Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
                 break
+            else:
+                self.VSRLabelEntry.delete(0, 'end')
+                self.VSRLabelQEntry.delete(0, 'end')
+                self.HSRLabelEntry.delete(0, 'end')
+                self.HSRLabelQEntry.delete(0, 'end')
+                self.ZSRLabelEntry.delete(0, 'end')
+                self.ZSRLabelQEntry.delete(0, 'end')
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'EMPTY CAVITY')
             if msgbox == 'ok':
@@ -1054,7 +1060,15 @@ class GUI(object):
                 self.ZERLabel1Entry.insert(0, str(DRM.ZEFreq1))
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  ## Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
+                self.ENA.MeasurementNum += 1
                 break
+            else:
+                self.VERLabel1Entry.delete(0, 'end')
+                self.VERLabel1QEntry.delete(0, 'end')
+                self.HERLabel1Entry.delete(0, 'end')
+                self.HERLabelQ1Entry.delete(0, 'end')
+                self.ZERLabel1Entry.delete(0, 'end')
+                self.ZERLabelQ1Entry.delete(0, 'end')
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'PLACE REPLICA IN CAVITY')
             if msgbox == 'ok':
@@ -1072,8 +1086,15 @@ class GUI(object):
                 self.ZRRLabelEntry.insert(0, str(DRM.ZRFreq))
                 self.ZRRLabelQEntry.insert(0, str(DRM.ZRQ))
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  ## Asks for user input if read was okay.
-            if msgbox == False:  # If measurements are good, continue
+            if msgbox == False:# If measurements are good, continue
                 break
+            else:
+                self.VRRLabelEntry.delete(0, 'end')
+                self.VRRLabelQEntry.delete(0, 'end')
+                self.HRRLabelEntry.delete(0, 'end')
+                self.HRRLabelQEntry.delete(0, 'end')
+                self.ZRRLabelEntry.delete(0, 'end')
+                self.ZRRLabelQEntry.delete(0, 'end')
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'EMPTY CAVITY')
             if msgbox == 'ok':
@@ -1093,23 +1114,37 @@ class GUI(object):
                 self.root.update_idletasks()
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  ## Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
+                self.ENA.MeasurementNum += 1
                 break
+            else:
+                self.VERLabelEntry.delete(0, 'end')
+                self.VERLabelQEntry.delete(0, 'end')
+                self.HERLabelEntry.delete(0, 'end')
+                self.HERLabelQEntry.delete(0, 'end')
+                self.ZERLabelEntry.delete(0, 'end')
+                self.ZERLabelQEntry.delete(0, 'end')
         DRM.calc(self.ENA)
         self.progress['value'] = 100
         self.DielectricResultEntry.insert(0, str(self.ENA.e_star1))
         # CMG start
         while True:
             try:  # Attempt to read the temperature
-                self.TempRead = self.ENA.temperature
+                self.ENA.Arduino_Serial.write(str.encode('3'))
+                temp_data = self.ENA.Arduino_Serial.readline().decode('utf-8')  # deg. C
+                temp_data = re.sub("[^0-9.]", "", temp_data)
+                time.sleep(2)
+                DRM.temperature = temp_data[:5]
+                DRM.humidity = temp_data[-5:]
             except:  # If failed, set reading to Not Read
                 msgbox = messagebox.askyesno('Temperature read failed', 'Do you want to try and read again?')
                 if msgbox == False:
                     self.manual = simpledialog.askstring("Manual input", "Please enter temperature manually")
                     if self.manual == None or self.manual == "":
-                        self.TempRead("Not Read")
+                        DRM.temperature = ("Not Read")
                     else:
-                        self.TempRead(self.manual)
+                        DRM.temperature(self.manual)
                     break
+        self.TempRead = self.ENA.temperature
         self.TempLabelEntry.insert(0, str(self.TempRead))  # Assigns value to the box
         # CMG end
         self.root.mainloop()
