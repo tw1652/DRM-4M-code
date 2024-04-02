@@ -986,6 +986,24 @@ class GUI(object):
             DRM.ZSFreq = peak_dataZS[1]/1000000
             DRM.ZSQ = peak_dataZS[2]
             self.ENA.MeasurementTime[5] = time.time()
+    def TempRead(self):
+        while True:
+            try:  # Attempt to read the temperature
+                self.ENA.Arduino_Serial.write(str.encode('3'))
+                temp_data = self.ENA.Arduino_Serial.readline().decode('utf-8')  # deg. C
+                temp_data = re.sub("[^0-9.]", "", temp_data)
+                time.sleep(2)
+                DRM.temperature = temp_data[:5]
+                DRM.humidity = temp_data[-5:]
+            except:  # If failed, set reading to Not Read
+                msgbox = messagebox.askyesno('Temperature read failed', 'Do you want to try and read again?')
+                if msgbox == False:
+                    self.manual = simpledialog.askstring("Manual input", "Please enter temperature manually")
+                    if self.manual == None or self.manual == "":
+                        DRM.temperature = ("Not Read")
+                    else:
+                        DRM.temperature(self.manual)
+                    break
 
     def run(self):
         self.root.update_idletasks()
@@ -1127,25 +1145,7 @@ class GUI(object):
         self.progress['value'] = 100
         self.DielectricResultEntry.insert(0, str(self.ENA.e_star1))
         # CMG start
-        while True:
-            try:  # Attempt to read the temperature
-                self.ENA.Arduino_Serial.write(str.encode('3'))
-                temp_data = self.ENA.Arduino_Serial.readline().decode('utf-8')  # deg. C
-                temp_data = re.sub("[^0-9.]", "", temp_data)
-                time.sleep(2)
-                DRM.temperature = temp_data[:5]
-                DRM.humidity = temp_data[-5:]
-            except:  # If failed, set reading to Not Read
-                msgbox = messagebox.askyesno('Temperature read failed', 'Do you want to try and read again?')
-                if msgbox == False:
-                    self.manual = simpledialog.askstring("Manual input", "Please enter temperature manually")
-                    if self.manual == None or self.manual == "":
-                        DRM.temperature = ("Not Read")
-                    else:
-                        DRM.temperature(self.manual)
-                    break
-        self.TempRead = self.ENA.temperature
-        self.TempLabelEntry.insert(0, str(self.TempRead))  # Assigns value to the box
+        self.TempLabelEntry.insert(0, str(self.ENA.temperature))  # Assigns value to the box
         # CMG end
         self.root.mainloop()
 
