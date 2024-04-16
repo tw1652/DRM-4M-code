@@ -20,13 +20,8 @@ time.sleep(3)
 centre = ENA.query('CALC:MARK:X:ABS?')
 ENA.write('SENS:FREQ:CENT %s;*WAI' % (centre))
 time.sleep(1)
-Freq_x = ENA.query_ascii_values(':SENS:FREQuency:CENT?')
-print(Freq_x)
-
-BWID_x = ENA.query_ascii_values(':CALCulate:MARKer:BWIDth?')
-print(BWID_x)
-
-cent_freq_rnd_x = round(Freq_x[0])
-bw_x = BWID_x[0] * 1.05
-bw_xf = round(bw_x,-2)
 ENA.write(':SENSe:FREQuency:SPAN 50 MHz')
+time.sleep(15)
+ENA.write(':CALC:MARK:BWID -3')
+BWID_x = ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
+print(BWID_x)
