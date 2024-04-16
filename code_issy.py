@@ -327,7 +327,7 @@ class GUI(object):
         self.status = '0'
         self.rm = pyvisa.ResourceManager()
         self.ENA = self.rm.open_resource('GPIB0::1::INSTR')  # ENA-E5061A
-        self.ENA.Arduino_Serial = serial.Serial('com4', 9600)
+        self.ENA.Arduino_Serial = serial.Serial('com3', 9600)
         self.ENA.MeasurementNum = 0
         self.ENA.ChamberState = 'e'
         self.ENA.MeasurementTime = [None] * 15
@@ -775,196 +775,136 @@ class GUI(object):
 
     def x_axis(self):
         if self.ENA.MeasurementNum == 0:
-            self.ENA.write(':SOURce:POWer:LEVel:IMMediate:AMPLitude %G' % (10.0))
-            self.ENA.write(':CALCulate:PARameter:DEFine %s' % ('S21'))
-            self.ENA.write(':SENSe:FREQuency:CENTer %G' % (439000000.0))
-            self.ENA.write(':SENSe:BANDwidth:RESolution %G' % (1000.0))
-            self.ENA.write(':CALCulate:SELected:MARKer1:STATe %d' % (1))
-            self.ENA.write(':SENSe:FREQuency:SPAN %G' % (2000000.0))  # testing autozoom
-            self.ENA.write(':SENSe:SWEep:POINts %d' % (1601))
-            self.ENA.write(':CALCulate:SELected:MARKer:FUNCtion:TRACking %d' % (1))
-            self.ENA.write(':CALCulate:SELected:MARKer:FUNCtion:MULTi:TRACking %d' % (1))
-            self.ENA.write(':TRIGger:SEQuence:SOURce %s' % ('EXTernal'))
-            self.ENA.write(':CALCulate1:SELected:MARKer1:FUNCtion:TYPE %s' % ('MAXimum'))
-            self.ENA.write(':CALCulate:SELected:MARKer:BWIDth:STATe %d' % (1))
-            self.ENA.write(':TRIGger:SEQuence:SINGle')
-            operation_status = self.ENA.query_ascii_values(':STATus:OPERation:CONDition?')
-            self.status = int(operation_status[0])
-            while (self.status != 32):
-                self.root.update()
-                operation_status = self.ENA.query_ascii_values(':STATus:OPERation:CONDition?')
-                self.status = int(operation_status[0])
-
-        ##CHANGE FREQ
-        self.ENA.Arduino_Serial.write(str.encode('2'))
-        self.ENA.write(':CALCulate:PARameter:DEFine %s' % ('S21'))
-        self.ENA.write(':SENSe:FREQuency:CENTer %G' % (439000000.0))
-        self.ENA.write(':SENSe:BANDwidth:RESolution %G' % (1000.0))
-        self.ENA.write(':CALCulate:SELected:MARKer1:STATe %d' % (1))
-        self.ENA.write(':SENSe:FREQuency:SPAN %G' % (2000000.0)) #testing autozoom
-        self.ENA.write(':SENSe:SWEep:POINts %d' % (1601))
-        self.ENA.write(':CALCulate:SELected:MARKer:FUNCtion:TRACking %d' % (1))
-        self.ENA.write(':CALCulate:SELected:MARKer:FUNCtion:MULTi:TRACking %d' % (1))
-        self.ENA.write(':TRIGger:SEQuence:SOURce %s' % ('EXTernal'))
-        self.ENA.write(':CALCulate1:SELected:MARKer1:FUNCtion:TYPE %s' % ('MAXimum'))
-        self.ENA.write(':CALCulate:SELected:MARKer:BWIDth:STATe %d' % (1))
-        self.ENA.write(':TRIGger:SEQuence:SINGle')
-
-        operation_status = self.ENA.query_ascii_values(':STATus:OPERation:CONDition?')
-        self.status = int(operation_status[0])
-        while (self.status != 32):
-            self.root.update()
-            operation_status = self.ENA.query_ascii_values(':STATus:OPERation:CONDition?')
-            self.status = int(operation_status[0])
-
-        cent_freq_x = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
-        cent_freq_rnd_x = round(cent_freq_x[1], -3)
-        bw_x = cent_freq_x[0] * 1.05
-        bw_xf = round(bw_x, -3)
-        self.ENA.write(':SENSe:FREQuency:CENTer %G' % (cent_freq_rnd_x))
-        self.ENA.write(':SENSe:BANDwidth:RESolution %G' % (100.0))
-        self.ENA.write(':SENSe:FREQuency:SPAN %G' % (bw_xf))
-        self.ENA.write(':TRIGger:SEQuence:SINGle')
-        operation_status = self.ENA.query_ascii_values(':STATus:OPERation:CONDition?')
-        self.status = int(operation_status[0])
-        while (self.status != 32):
-            self.root.update()
-            operation_status = self.ENA.query_ascii_values(':STATus:OPERation:CONDition?')
-            self.status = int(operation_status[0])
+            self.ENA.write(':SOURce:POWer:LEVel:IMMediate:AMPLitude %G' % (5.0))  ## 10 too high, as performance at this level is not specified. 7.0 is the max without this error
+            self.ENA.write('CONF "FILT:TRAN"; *WAI')
+            self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
+            self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
+            self.ENA.write(':SENS:FREQ:STOP 1400 MHz;*WAI')
+            self.ENA.write(':CALCulate:MARKer:STATe %d' % (1))
+            self.ENA.write(':SENSe:SWEep:POINts 201')
+            time.sleep(13)
+            self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
+            time.sleep(13)
+            self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
+            time.sleep(2)
+            self.centre = self.ENA.query('CALC:MARK:X:ABS?')
+            self.ENA.write('SENS:FREQ:CENT %s;*WAI' % (self.centre))
+            time.sleep(1)
+            self.ENA.write(':SENSe:FREQuency:SPAN 50 MHz')
+            time.sleep(16)
+            self.ENA.write(':CALC:MARK:BWID -3')
 
         if self.ENA.ChamberState == 'e':
 
             #Empty 1
             if self.ENA.MeasurementNum == 0:
-                peak_dataX = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+                peak_dataX = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.XEFreq = peak_dataX[1]/1000000
                 DRM.XEQ1 = peak_dataX[2]
                 self.ENA.MeasurementTime[0] = time.time()
             #Empty 2
             elif self.ENA.MeasurementNum == 1:
-                peak_dataX1 = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+                peak_dataX1 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.XEFreq1 = peak_dataX1[1]/1000000
                 DRM.XEQ2 = peak_dataX1[2]
                 self.ENA.MeasurementTime[6] = time.time()
             #Empty 3
             elif self.ENA.MeasurementNum == 2:
-                peak_dataX2 = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+                peak_dataX2 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.XEFreq2 = peak_dataX2[1]/1000000
                 DRM.XEQ3 = peak_dataX2[2]
                 self.ENA.MeasurementTime[12] = time.time()
 
         #REPLICA
         elif self.ENA.ChamberState == 'r':
-            peak_dataXR = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+            peak_dataXR = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
             DRM.XRFreq = peak_dataXR[1]/1000000
             DRM.XRQ = peak_dataXR[2]
             self.ENA.MeasurementTime[9] = time.time()
 
         #SPECIMEN
         elif self.ENA.ChamberState == 's':
-            peak_dataXS = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+            peak_dataXS = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
             DRM.XSFreq = peak_dataXS[1]/1000000
             DRM.XSQ = peak_dataXS[2]
             self.ENA.MeasurementTime[3] = time.time()
 
 
     def y_axis(self):
-        self.ENA.Arduino_Serial.write(str.encode('0'))
-        self.ENA.write(':SENSe:FREQuency:CENTer %G' % (438500000.0))
-        self.ENA.write(':SENSe:BANDwidth:RESolution %G' % (1000.0))
-        self.ENA.write(':SENSe:FREQuency:SPAN %G' % (2000000.0))
-        self.ENA.write(':TRIGger:SEQuence:SINGle')
-        operation_status = self.ENA.query_ascii_values(':STATus:OPERation:CONDition?')
-        self.status = int(operation_status[0])
-        while (self.status != 32):
-            operation_status = self.ENA.query_ascii_values(':STATus:OPERation:CONDition?')
-            self.status = int(operation_status[0])
-            self.root.update()
-        cent_freq_z = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
-        cent_freq_rnd_z = round(cent_freq_z[1], -3)
-        bw_y = cent_freq_z[0] * 1.05
-        bw_yf = round(bw_y, -3)
-        self.ENA.write(':SENSe:FREQuency:CENTer %G' % (cent_freq_rnd_z))
-        self.ENA.write(':SENSe:BANDwidth:RESolution %G' % (100.0))
-        self.ENA.write(':SENSe:FREQuency:SPAN %G' % (bw_yf))
-        self.ENA.write(':TRIGger:SEQuence:SINGle')
-        operation_status = self.ENA.query_ascii_values(':STATus:OPERation:CONDition?')
-        self.status = int(operation_status[0])
-        while (self.status != 32):
-            operation_status = self.ENA.query_ascii_values(':STATus:OPERation:CONDition?')
-            self.status = int(operation_status[0])
-            self.root.update()
+        self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
+        self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
+        self.ENA.write(':SENS:FREQ:STOP 1400 MHz;*WAI')
+        self.ENA.write(':CALCulate:MARKer:STATe %d' % (1))
+        self.ENA.write(':SENSe:SWEep:POINts 201')
+        time.sleep(13)
+        self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
+        time.sleep(12)
+        self.centre = self.ENA.query('CALC:MARK:X:ABS?')
+        self.ENA.write('SENS:FREQ:CENT %s;*WAI' % (self.centre))
+        time.sleep(1)
+        self.ENA.write(':SENSe:FREQuency:SPAN 50 MHz')
+        time.sleep(16)
 
         if self.ENA.ChamberState == 'e':
 
             #Empty 1
             if self.ENA.MeasurementNum == 0:
-                peak_dataY = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+                peak_dataY = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.YEFreq = peak_dataY[1]/1000000
                 DRM.YEQ1 = peak_dataY[2]
                 self.ENA.MeasurementTime[1] = time.time()
 
             #Empty 2
             if self.ENA.MeasurementNum == 1:
-                peak_dataY1 = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+                peak_dataY1 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.YEFreq1 = peak_dataY1[1]/1000000
                 DRM.YEQ2 = peak_dataY1[2]
                 self.ENA.MeasurementTime[7] = time.time()
 
             #Empty 3
             elif self.ENA.MeasurementNum == 2:
-                peak_dataY2 = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+                peak_dataY2 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.YEFreq2 = peak_dataY2[1]/1000000
                 DRM.YEQ3 = peak_dataY2[2]
                 self.ENA.MeasurementTime[13] = time.time()
 
         #REPLICA
         if self.ENA.ChamberState == 'r':
-            peak_dataYR = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+            peak_dataYR = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
             DRM.YRFreq = peak_dataYR[1]/1000000
             DRM.YRQ = peak_dataYR[2]
             self.ENA.MeasurementTime[10] = time.time()
 
         #SPECIMEN
         elif self.ENA.ChamberState == 's':
-            peak_dataYS = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+            peak_dataYS = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
             DRM.YSFreq = peak_dataYS[1]/1000000
             DRM.YSQ = peak_dataYS[2]
             self.ENA.MeasurementTime[4] = time.time()
 
     def z_axis(self):
         self.ENA.Arduino_Serial.write(str.encode('1'))
-        self.ENA.write(':SENSe:FREQuency:CENTer %G' % (434000000.0))
-        self.ENA.write(':TRIGger:SEQuence:SINGle')
-        self.ENA.write(':SENSe:FREQuency:SPAN %G' % (2000000.0))
-        self.ENA.write(':SENSe:BANDwidth:RESolution %G' % (1000.0))
-        self.ENA.write(':TRIGger:SEQuence:SINGle')
-        operation_status = self.ENA.query_ascii_values(':STATus:OPERation:CONDition?')
-        self.status = int(operation_status[0])
-        while (self.status != 32):
-            self.root.update()
-            operation_status = self.ENA.query_ascii_values(':STATus:OPERation:CONDition?')
-            self.status = int(operation_status[0])
-        cent_freq_z = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
-        cent_freq_rnd_z = round(cent_freq_z[1], -3)
-        bw_z = cent_freq_z[0] * 1.05
-        bw_zf = round(bw_z, -3)
-        self.ENA.write(':SENSe:FREQuency:CENTer %G' % (cent_freq_rnd_z))
-        self.ENA.write(':SENSe:BANDwidth:RESolution %G' % (100.0))
-        self.ENA.write(':SENSe:FREQuency:SPAN %G' % (bw_zf))
-        self.ENA.write(':TRIGger:SEQuence:SINGle')
-        operation_status = self.ENA.query_ascii_values(':STATus:OPERation:CONDition?')
-        self.status = int(operation_status[0])
-        while (self.status != 32):
-            operation_status = self.ENA.query_ascii_values(':STATus:OPERation:CONDition?')
-            self.status = int(operation_status[0])
-            self.root.update()
+        self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
+        self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
+        self.ENA.write(':SENS:FREQ:STOP 1400 MHz;*WAI')
+        self.ENA.write(':CALCulate:MARKer:STATe %d' % (1))
+        self.ENA.write(':SENSe:FREQuency:SPAN 200 MHz')
+        self.ENA.write(':SENSe:SWEep:POINts 201')
+        time.sleep(13)
+        self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
+        time.sleep(12)
+        self.centre = self.ENA.query('CALC:MARK:X:ABS?')
+        self.ENA.write('SENS:FREQ:CENT %s;*WAI' % (self.centre))
+        time.sleep(1)
+        self.ENA.write(':SENSe:FREQuency:SPAN 50 MHz')
+        time.sleep(16)
+
 
         if self.ENA.ChamberState == 'e':
 
             # Empty 1
             if self.ENA.MeasurementNum == 0:
-                peak_dataZ = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+                peak_dataZ = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.ZEFreq = peak_dataZ[1]/1000000
                 DRM.ZEQ1 = peak_dataZ[2]
                 self.ENA.MeasurementNum += 1
@@ -972,7 +912,7 @@ class GUI(object):
 
             # Empty 2
             elif self.ENA.MeasurementNum == 1:
-                peak_dataZ1 = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+                peak_dataZ1 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.ZEFreq1 = peak_dataZ1[1]/1000000
                 DRM.ZEQ2 = peak_dataZ1[2]
                 self.ENA.MeasurementNum += 1
@@ -980,7 +920,7 @@ class GUI(object):
 
             # Empty 3
             elif self.ENA.MeasurementNum == 2:
-                peak_dataZ2 = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+                peak_dataZ2 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.ZEFreq2 = peak_dataZ2[1]/1000000
                 DRM.ZEQ3 = peak_dataZ2[2]
                 self.ENA.MeasurementNum += 1
@@ -994,14 +934,14 @@ class GUI(object):
 
         # REPLICA
         elif self.ENA.ChamberState == 'r':
-            peak_dataZR = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+            peak_dataZR = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
             DRM.ZRFreq = peak_dataZR[1]/1000000
             DRM.ZRQ = peak_dataZR[2]
             self.ENA.MeasurementTime[11] = time.time()
 
         # SPECIMEN
         elif self.ENA.ChamberState == 's':
-            peak_dataZS = self.ENA.query_ascii_values(':CALCulate1:SELected:MARKer1:BWIDth:DATA?')
+            peak_dataZS = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
             DRM.ZSFreq = peak_dataZS[1]/1000000
             DRM.ZSQ = peak_dataZS[2]
             self.ENA.MeasurementTime[5] = time.time()
