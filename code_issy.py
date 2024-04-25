@@ -102,18 +102,18 @@ class DRM(object):
         self.e_star2.set('0.0000')
 
 
-    for _ in range(num_runs):
-        def calc(self):
+    def calc(self):
+        for _ in range(num_runs):
             # volume of cavity
             vc = 0.275 * 0.3 * 0.336
    
             #room temperature
-            self.Arduino_Serial.write(str.encode('3'))
-            time.sleep(2)
-            temp_data = self.Arduino_Serial.readline().decode('utf-8') # deg. C
-            temp_data = re.sub("[^0-9.]", "", temp_data)
-            self.temperature = temp_data[:5]
-            self.humidity = temp_data[-5:]
+            # self.Arduino_Serial.write(str.encode('3'))
+            # time.sleep(2)
+            # temp_data = self.Arduino_Serial.readline().decode('utf-8') # deg. C
+            # temp_data = re.sub("[^0-9.]", "", temp_data)
+            # self.temperature = temp_data[:5]
+            # self.humidity = temp_data[-5:]
    
             # SAMPLE DETAILS
    
@@ -313,7 +313,7 @@ class DRM(object):
             self.tand = -np.imag(self.e_star1) / np.real(self.e_star1)
            
             # Print or store the results if needed
-            print("Run", _ + 1, "completed.")
+            print("Run", i + 1, "completed.")
 
             # Add a delay to control the frequency of calculations
             time.sleep(10)  # Adjust the delay time as needed
@@ -327,7 +327,7 @@ class GUI(object):
         self.status = '0'
         self.rm = pyvisa.ResourceManager()
         self.ENA = self.rm.open_resource('GPIB0::1::INSTR')  # ENA-E5061A
-        self.ENA.Arduino_Serial = serial.Serial('com3', 9600)
+        self.ENA.Arduino_Serial = serial.Serial('com3', 115200)
         self.ENA.MeasurementNum = 0
         self.ENA.ChamberState = 'e'
         self.ENA.MeasurementTime = [None] * 15
@@ -774,26 +774,45 @@ class GUI(object):
         self.ENA.e_star2 = complex(self.VS2PLabelEntry.get())
 
     def x_axis(self):
+        self.ENA.Arduino_Serial.write("0".encode('utf-8'))
+        print("pre loop")
+        while True:
+            self.read = self.ENA.Arduino_Serial.readline()
+            print(self.read)
+            print("not a thing")
         if self.ENA.MeasurementNum == 0:
             self.ENA.write(':SOURce:POWer:LEVel:IMMediate:AMPLitude %G' % (5.0))  ## 10 too high, as performance at this level is not specified. 7.0 is the max without this error
             self.ENA.write('CONF "FILT:TRAN"; *WAI')
             self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
             self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
-            self.ENA.write(':SENS:FREQ:STOP 1400 MHz;*WAI')
-            self.ENA.write(':CALCulate:MARKer:STATe %d' % (1))
-            self.ENA.write(':SENSe:SWEep:POINts 201')
-            time.sleep(13)
-            self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
-            time.sleep(13)
-            self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
-            time.sleep(2)
-            self.centre = self.ENA.query('CALC:MARK:X:ABS?')
-            self.ENA.write('SENS:FREQ:CENT %s;*WAI' % (self.centre))
-            time.sleep(1)
-            self.ENA.write(':SENSe:FREQuency:SPAN 50 MHz')
-            time.sleep(16)
+            self.ENA.write(':SENS:FREQ:STOP 1500 MHz;*WAI')
             self.ENA.write(':CALC:MARK:BWID -3')
-
+            self.ENA.write(':SENSe:SWEep:POINts 201')
+            time.sleep(10)
+            self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
+            self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
+            self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
+            self.BWID = round(self.results[0], -3) * 1.05
+            self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
+            self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
+        self.read = "no"
+        print(self.read)
+        while str(self.read) != "X":
+            self.read = (str(self.ENA.Arduino_Serial.readline()))[2]
+            print(self.read)
+        self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
+        self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
+        self.ENA.write(':SENS:FREQ:STOP 1500 MHz;*WAI')
+        time.sleep(10)
+        self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
+        self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
+        self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
+        self.BWID = round(self.results[0], -3) * 1.05
+        self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
+        self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
+        print("x")
+        print(self.results)
+        time.sleep(5)
         if self.ENA.ChamberState == 'e':
 
             #Empty 1
@@ -831,20 +850,25 @@ class GUI(object):
 
 
     def y_axis(self):
+        self.ENA.Arduino_Serial.write(str.encode('1'))
+        self.read = "no"
+        print(self.read)
+        while str(self.read) != "Y":
+            self.read = (str(self.ENA.Arduino_Serial.readline()))[2]
+            print(self.read)
         self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
         self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
-        self.ENA.write(':SENS:FREQ:STOP 1400 MHz;*WAI')
-        self.ENA.write(':CALCulate:MARKer:STATe %d' % (1))
-        self.ENA.write(':SENSe:SWEep:POINts 201')
-        time.sleep(13)
+        self.ENA.write(':SENS:FREQ:STOP 1500 MHz;*WAI')
+        time.sleep(10)
         self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
-        time.sleep(12)
-        self.centre = self.ENA.query('CALC:MARK:X:ABS?')
-        self.ENA.write('SENS:FREQ:CENT %s;*WAI' % (self.centre))
-        time.sleep(1)
-        self.ENA.write(':SENSe:FREQuency:SPAN 50 MHz')
-        time.sleep(16)
-
+        self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
+        self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
+        self.BWID = round(self.results[0], -3) * 1.05
+        self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
+        self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
+        print("y")
+        print(self.results)
+        time.sleep(5)
         if self.ENA.ChamberState == 'e':
 
             #Empty 1
@@ -883,21 +907,26 @@ class GUI(object):
             self.ENA.MeasurementTime[4] = time.time()
 
     def z_axis(self):
-        self.ENA.Arduino_Serial.write(str.encode('1'))
+        self.ENA.Arduino_Serial.write(str.encode('2'))
+        self.read = "no"
+        print(self.read)
+        while str(self.read) != "Z":
+            self.read = (str(self.ENA.Arduino_Serial.readline()))[2]
+            print(self.read)
+        self.ENA.Arduino_Serial
         self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
         self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
-        self.ENA.write(':SENS:FREQ:STOP 1400 MHz;*WAI')
-        self.ENA.write(':CALCulate:MARKer:STATe %d' % (1))
-        self.ENA.write(':SENSe:FREQuency:SPAN 200 MHz')
-        self.ENA.write(':SENSe:SWEep:POINts 201')
-        time.sleep(13)
+        self.ENA.write(':SENS:FREQ:STOP 1500 MHz;*WAI')
+        time.sleep(10)
         self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
-        time.sleep(12)
-        self.centre = self.ENA.query('CALC:MARK:X:ABS?')
-        self.ENA.write('SENS:FREQ:CENT %s;*WAI' % (self.centre))
-        time.sleep(1)
-        self.ENA.write(':SENSe:FREQuency:SPAN 50 MHz')
-        time.sleep(16)
+        self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
+        self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
+        self.BWID = round(self.results[0], -3) * 1.05
+        self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
+        self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
+        print("z")
+        print(self.results)
+        time.sleep(5)
 
 
         if self.ENA.ChamberState == 'e':
@@ -925,12 +954,6 @@ class GUI(object):
                 DRM.ZEQ3 = peak_dataZ2[2]
                 self.ENA.MeasurementNum += 1
                 self.ENA.MeasurementTime[14] = time.time()
-                self.ENA.Arduino_Serial.write(str.encode('3'))
-                temp_data = self.ENA.Arduino_Serial.readline().decode('utf-8')  # deg. C
-                temp_data = re.sub("[^0-9.]", "", temp_data)
-                time.sleep(2)
-                DRM.temperature = temp_data[:5]
-                DRM.humidity = temp_data[-5:]
 
         # REPLICA
         elif self.ENA.ChamberState == 'r':
@@ -945,6 +968,26 @@ class GUI(object):
             DRM.ZSFreq = peak_dataZS[1]/1000000
             DRM.ZSQ = peak_dataZS[2]
             self.ENA.MeasurementTime[5] = time.time()
+
+    def TempRead(self):
+        while True:
+            try:  # Attempt to read the temperature
+                self.ENA.Arduino_Serial.write(str.encode('3'))
+                temp_data = self.ENA.Arduino_Serial.readline().decode('utf-8')  # deg. C
+                temp_data = re.sub("[^0-9.]", "", temp_data)
+                time.sleep(2)
+                DRM.temperature = temp_data[:5]
+                DRM.humidity = temp_data[-5:]
+            except:  # If failed, set reading to Not Read
+                msgbox = messagebox.askyesno('Temperature read failed', 'Do you want to try and read again?')
+                if msgbox == False:
+                    self.manual = simpledialog.askstring("Manual input", "Please enter temperature manually")
+                    if self.manual == None or self.manual == "":
+                        DRM.temperature = ("Not Read")
+                    else:
+                        DRM.temperature(self.manual)
+                    break
+
 
     def run(self):
         self.root.update_idletasks()
@@ -1024,6 +1067,7 @@ class GUI(object):
             self.ZERLabel2Entry.insert(0, str(DRM.ZEFreq2))
             self.ZERLabelQEntry2.insert(0, str(DRM.ZEQ3))
             self.root.update_idletasks()
+        TempRead()
         DRM.calc(self.ENA)
         self.progress['value'] = 100
         self.DielectricResultEntry.insert(0, str(self.ENA.e_star1))
