@@ -13,6 +13,7 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox
 from tkinter.ttk import Progressbar
+from tkinter.ttk import simpledialog
 from tkinter import filedialog
 import time
 import os
@@ -1068,10 +1069,7 @@ class GUI(object):
             self.ZERLabel2Entry.insert(0, str(DRM.ZEFreq2))
             self.ZERLabelQEntry2.insert(0, str(DRM.ZEQ3))
             self.root.update_idletasks()
-        try:
-            self.TempRead()
-        except:
-            time.sleep(0.01)
+        self.TempRead()
         DRM.calc(self.ENA)
         self.progress['value'] = 100
         self.DielectricResultEntry.insert(0, str(self.ENA.e_star1))
