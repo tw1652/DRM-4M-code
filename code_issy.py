@@ -16,6 +16,7 @@ from tkinter.ttk import Progressbar
 from tkinter import filedialog
 import time
 import os
+import re
 
 num_runs = 10
 
@@ -103,7 +104,7 @@ class DRM(object):
 
 
     def calc(self):
-        for _ in range(num_runs):
+        for i in range(num_runs):
             # volume of cavity
             vc = 0.275 * 0.3 * 0.336
    
@@ -327,7 +328,8 @@ class GUI(object):
         self.status = '0'
         self.rm = pyvisa.ResourceManager()
         self.ENA = self.rm.open_resource('GPIB0::1::INSTR')  # ENA-E5061A
-        self.ENA.Arduino_Serial = serial.Serial('com3', 115200)
+        self.ENA.Arduino_Serial = serial.Serial('com3', 9600)
+        self.ENA.Arduino_Serial.close()
         self.ENA.MeasurementNum = 0
         self.ENA.ChamberState = 'e'
         self.ENA.MeasurementTime = [None] * 15
@@ -774,12 +776,12 @@ class GUI(object):
         self.ENA.e_star2 = complex(self.VS2PLabelEntry.get())
 
     def x_axis(self):
-        self.ENA.Arduino_Serial.write("0".encode('utf-8'))
-        print("pre loop")
-        while True:
-            self.read = self.ENA.Arduino_Serial.readline()
-            print(self.read)
-            print("not a thing")
+        self.ENA.Arduino_Serial.open()
+        time.sleep(2)
+        self.mode = 0
+        self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))
+        time.sleep(5)
+        self.ENA.Arduino_Serial.close()
         if self.ENA.MeasurementNum == 0:
             self.ENA.write(':SOURce:POWer:LEVel:IMMediate:AMPLitude %G' % (5.0))  ## 10 too high, as performance at this level is not specified. 7.0 is the max without this error
             self.ENA.write('CONF "FILT:TRAN"; *WAI')
@@ -795,11 +797,6 @@ class GUI(object):
             self.BWID = round(self.results[0], -3) * 1.05
             self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
             self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
-        self.read = "no"
-        print(self.read)
-        while str(self.read) != "X":
-            self.read = (str(self.ENA.Arduino_Serial.readline()))[2]
-            print(self.read)
         self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
         self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
         self.ENA.write(':SENS:FREQ:STOP 1500 MHz;*WAI')
@@ -850,12 +847,12 @@ class GUI(object):
 
 
     def y_axis(self):
-        self.ENA.Arduino_Serial.write(str.encode('1'))
-        self.read = "no"
-        print(self.read)
-        while str(self.read) != "Y":
-            self.read = (str(self.ENA.Arduino_Serial.readline()))[2]
-            print(self.read)
+        self.ENA.Arduino_Serial.open()
+        time.sleep(3)
+        self.mode = 1
+        self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))
+        time.sleep(5)
+        self.ENA.Arduino_Serial.close()
         self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
         self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
         self.ENA.write(':SENS:FREQ:STOP 1500 MHz;*WAI')
@@ -907,13 +904,12 @@ class GUI(object):
             self.ENA.MeasurementTime[4] = time.time()
 
     def z_axis(self):
-        self.ENA.Arduino_Serial.write(str.encode('2'))
-        self.read = "no"
-        print(self.read)
-        while str(self.read) != "Z":
-            self.read = (str(self.ENA.Arduino_Serial.readline()))[2]
-            print(self.read)
-        self.ENA.Arduino_Serial
+        self.ENA.Arduino_Serial.open()
+        time.sleep(3)
+        self.mode = 2
+        self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))
+        time.sleep(5)
+        self.ENA.Arduino_Serial.close()
         self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
         self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
         self.ENA.write(':SENS:FREQ:STOP 1500 MHz;*WAI')
@@ -972,10 +968,15 @@ class GUI(object):
     def TempRead(self):
         while True:
             try:  # Attempt to read the temperature
-                self.ENA.Arduino_Serial.write(str.encode('3'))
+                self.ENA.Arduino_Serial.open()
+                time.sleep(2)
+                self.mode = 3
+                self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))
+                time.sleep(5)
                 temp_data = self.ENA.Arduino_Serial.readline().decode('utf-8')  # deg. C
                 temp_data = re.sub("[^0-9.]", "", temp_data)
                 time.sleep(2)
+                self.ENA.Arduino_Serial.close()
                 DRM.temperature = temp_data[:5]
                 DRM.humidity = temp_data[-5:]
             except:  # If failed, set reading to Not Read
@@ -1067,7 +1068,10 @@ class GUI(object):
             self.ZERLabel2Entry.insert(0, str(DRM.ZEFreq2))
             self.ZERLabelQEntry2.insert(0, str(DRM.ZEQ3))
             self.root.update_idletasks()
-        TempRead()
+        try:
+            self.TempRead()
+        except:
+            time.sleep(0.01)
         DRM.calc(self.ENA)
         self.progress['value'] = 100
         self.DielectricResultEntry.insert(0, str(self.ENA.e_star1))
@@ -1135,8 +1139,11 @@ class GUI(object):
         fh = open(self.filename+"/drm_GUI_analysis%s.txt" % j, "w")
         fh.write("Operating Conditions\n")
         fh.write("%s\n" % datetime.datetime.now())
-        fh.write("Temperature: %s °C\n" % self.ENA.temperature)
-        fh.write("Humidity: %s" % self.ENA.humidity)
+        try:
+            fh.write("Temperature: %s °C\n" % self.ENA.temperature)
+            fh.write("Humidity: %s" % self.ENA.humidity)
+        except:
+            time.sleep(0.1)
         fh.write("%\n")
         fh.write("SAMPLE VOLUME: %s\n" % self.ENA.vs1)
         fh.write("REPLICA VOLUME: %s\n" % self.ENA.vs2)
