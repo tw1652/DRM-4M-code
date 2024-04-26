@@ -13,13 +13,13 @@ from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox
 from tkinter.ttk import Progressbar
-from tkinter.ttk import simpledialog
+from tkinter import simpledialog
 from tkinter import filedialog
 import time
 import os
 import re
 
-num_runs = 10
+num_runs = 3
 
 class DRM(object):
 
@@ -970,24 +970,24 @@ class GUI(object):
         while True:
             try:  # Attempt to read the temperature
                 self.ENA.Arduino_Serial.open()
-                time.sleep(2)
+                time.sleep(3)
                 self.mode = 3
                 self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))
-                time.sleep(5)
-                temp_data = self.ENA.Arduino_Serial.readline().decode('utf-8')  # deg. C
+                temp_data = self.ENA.Arduino_Serial.readline().decode('utf-8').strip()  # deg. C
                 temp_data = re.sub("[^0-9.]", "", temp_data)
-                time.sleep(2)
                 self.ENA.Arduino_Serial.close()
-                DRM.temperature = temp_data[:5]
-                DRM.humidity = temp_data[-5:]
+                self.ENA.temperature = temp_data[-5:]
+                self.ENA.humidity = temp_data[:5]
+                break
             except:  # If failed, set reading to Not Read
                 msgbox = messagebox.askyesno('Temperature read failed', 'Do you want to try and read again?')
                 if msgbox == False:
                     self.manual = simpledialog.askstring("Manual input", "Please enter temperature manually")
                     if self.manual == None or self.manual == "":
-                        DRM.temperature = ("Not Read")
+                        self.ENA.temperature = ("Not Read")
                     else:
-                        DRM.temperature(self.manual)
+                        self.ENA.temperature = (self.manual)
+                    self.ENA.humidity("Not Read")
                     break
 
 
