@@ -19,7 +19,7 @@ import time
 import os
 import re
 
-num_runs = 3
+num_runs = 10
 
 class DRM(object):
 
@@ -108,14 +108,6 @@ class DRM(object):
         for i in range(num_runs):
             # volume of cavity
             vc = 0.275 * 0.3 * 0.336
-   
-            #room temperature
-            # self.Arduino_Serial.write(str.encode('3'))
-            # time.sleep(2)
-            # temp_data = self.Arduino_Serial.readline().decode('utf-8') # deg. C
-            # temp_data = re.sub("[^0-9.]", "", temp_data)
-            # self.temperature = temp_data[:5]
-            # self.humidity = temp_data[-5:]
    
             # SAMPLE DETAILS
    
@@ -933,7 +925,6 @@ class GUI(object):
                 peak_dataZ = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.ZEFreq = peak_dataZ[1]/1000000
                 DRM.ZEQ1 = peak_dataZ[2]
-                self.ENA.MeasurementNum += 1
                 self.ENA.MeasurementTime[2] = time.time()
 
             # Empty 2
@@ -941,7 +932,6 @@ class GUI(object):
                 peak_dataZ1 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.ZEFreq1 = peak_dataZ1[1]/1000000
                 DRM.ZEQ2 = peak_dataZ1[2]
-                self.ENA.MeasurementNum += 1
                 self.ENA.MeasurementTime[8] = time.time()
 
             # Empty 3
@@ -949,8 +939,9 @@ class GUI(object):
                 peak_dataZ2 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.ZEFreq2 = peak_dataZ2[1]/1000000
                 DRM.ZEQ3 = peak_dataZ2[2]
-                self.ENA.MeasurementNum += 1
                 self.ENA.MeasurementTime[14] = time.time()
+
+            self.ENA.MeasurementNum += 1
 
         # REPLICA
         elif self.ENA.ChamberState == 'r':
@@ -967,28 +958,28 @@ class GUI(object):
             self.ENA.MeasurementTime[5] = time.time()
 
     def TempRead(self):
-        while True:
+        while True: ## Loop continues until one of the predetermined ends is reached
             try:  # Attempt to read the temperature
                 self.ENA.Arduino_Serial.open()
                 time.sleep(3)
-                self.mode = 3
+                self.mode = 3 # Sending Mode 3 to the Arduino sets it to DHT mode
                 self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))
                 temp_data = self.ENA.Arduino_Serial.readline().decode('utf-8').strip()  # deg. C
-                temp_data = re.sub("[^0-9.]", "", temp_data)
+                temp_data = re.sub("[^0-9.]", "", temp_data) # These two lines sanatise the output and remove any extra characters
                 self.ENA.Arduino_Serial.close()
                 self.ENA.temperature = temp_data[-5:]
                 self.ENA.humidity = temp_data[:5]
-                break
+                break # Ends the Loop
             except:  # If failed, set reading to Not Read
-                msgbox = messagebox.askyesno('Temperature read failed', 'Do you want to try and read again?')
+                msgbox = messagebox.askyesno('Temperature read failed', 'Do you want to try and read again?') # Prompts the user if they want to try again
                 if msgbox == False:
-                    self.manual = simpledialog.askstring("Manual input", "Please enter temperature manually")
+                    self.manual = simpledialog.askstring("Manual input", "Please enter temperature manually") # Prompts the user to enter the temperature manually
                     if self.manual == None or self.manual == "":
                         self.ENA.temperature = ("Not Read")
                     else:
                         self.ENA.temperature = (self.manual)
-                    self.ENA.humidity("Not Read")
-                    break
+                    self.ENA.humidity("Not Read") # automatically assigns humidity as not read due to less likely to have a humidity sensor to hand
+                    break # Ends the Loop
 
 
     def run(self):
