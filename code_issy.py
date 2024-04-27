@@ -1183,11 +1183,8 @@ class GUI(object):
         fh = open(self.filename+"/drm_GUI_analysis%s.txt" % j, "w")
         fh.write("Operating Conditions\n")
         fh.write("%s\n" % datetime.datetime.now())
-        try:
-            fh.write("Temperature: %s °C\n" % self.ENA.temperature)
-            fh.write("Humidity: %s" % self.ENA.humidity)
-        except:
-            time.sleep(0.1)
+        fh.write("Temperature: %s °C\n" % self.ENA.temperature)
+        fh.write("Humidity: %s" % self.ENA.humidity)
         fh.write("%\n")
         fh.write("SAMPLE VOLUME: %s\n" % self.ENA.vs1)
         fh.write("REPLICA VOLUME: %s\n" % self.ENA.vs2)
