@@ -984,82 +984,137 @@ class GUI(object):
 
     def run(self):
         self.root.update_idletasks()
-        msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
-        if msgbox == 'ok':
-            self.ENA.ChamberState = 'e'
-            self.x_axis()
-            self.progress['value'] = 6.66
-            self.VERLabelEntry.insert(0, str(DRM.XEFreq))
-            self.VERLabelQEntry.insert(0, str(DRM.XEQ1))
-            self.y_axis()
-            self.progress['value'] = 6.66*2
-            self.HERLabelEntry.insert(0, str(DRM.YEFreq))
-            self.HERLabelQEntry.insert(0, str(DRM.YEQ1))
-            self.z_axis()
-            self.progress['value'] = 6.66*3
-            self.ZERLabelEntry.insert(0, str(DRM.ZEFreq))
-            self.ZERLabelQEntry.insert(0, str(DRM.ZEQ1))
-        msgbox = messagebox.showwarning('WARNING',  'PLACE ORIGINAL IN CAVITY')
-        if msgbox == 'ok':
-            self.ENA.ChamberState = 's'
-            self.x_axis()
-            self.progress['value'] = 6.66*4
-            self.VSRLabelQEntry.insert(0, str(DRM.XSQ))
-            self.VSRLabelEntry.insert(0, str(DRM.XSFreq))
-            self.y_axis()
-            self.progress['value'] = 6.66 * 5
-            self.HSRLabelEntry.insert(0, str(DRM.YSFreq))
-            self.HSRLabelQEntry.insert(0, str(DRM.YSQ))
-            self.z_axis()
-            self.progress['value'] = 6.66 * 6
-            self.ZSRLabelEntry.insert(0, str(DRM.ZSFreq))
-            self.ZSRLabelQEntry.insert(0, str(DRM.ZSQ))
+        while True:  # this loop allows for human error with handling the machine. applied to every section
+            msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
+            if msgbox == 'ok':
+                self.ENA.ChamberState = 'e'
+                self.x_axis()
+                self.progress['value'] = 6.66
+                self.VERLabelEntry.insert(0, str(DRM.XEFreq))
+                self.VERLabelQEntry.insert(0, str(DRM.XEQ1))
+                self.y_axis()
+                self.progress['value'] = 6.66*2
+                self.HERLabelEntry.insert(0, str(DRM.YEFreq))
+                self.HERLabelQEntry.insert(0, str(DRM.YEQ1))
+                self.z_axis()
+                self.progress['value'] = 6.66*3
+                self.ZERLabelEntry.insert(0, str(DRM.ZEFreq))
+                self.ZERLabelQEntry.insert(0, str(DRM.ZEQ1))
+            msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
+            if msgbox == False:  # If measurements are good, continue
+                break
+            else:
+                self.VRRLabelEntry.delete(0, 'end')
+                self.VRRLabelQEntry.delete(0, 'end')
+                self.HRRLabelEntry.delete(0, 'end')
+                self.HRRLabelQEntry.delete(0, 'end')
+                self.ZRRLabelEntry.delete(0, 'end')
+                self.ZRRLabelQEntry.delete(0, 'end')
+        while True:  # this loop allows for human error with handling the machine. applied to every section
+            msgbox = messagebox.showwarning('WARNING',  'PLACE ORIGINAL IN CAVITY')
+            if msgbox == 'ok':
+                self.ENA.ChamberState = 's'
+                self.x_axis()
+                self.progress['value'] = 6.66*4
+                self.VSRLabelQEntry.insert(0, str(DRM.XSQ))
+                self.VSRLabelEntry.insert(0, str(DRM.XSFreq))
+                self.y_axis()
+                self.progress['value'] = 6.66 * 5
+                self.HSRLabelEntry.insert(0, str(DRM.YSFreq))
+                self.HSRLabelQEntry.insert(0, str(DRM.YSQ))
+                self.z_axis()
+                self.progress['value'] = 6.66 * 6
+                self.ZSRLabelEntry.insert(0, str(DRM.ZSFreq))
+                self.ZSRLabelQEntry.insert(0, str(DRM.ZSQ))
+            msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
+            if msgbox == False:  # If measurements are good, continue
+                break
+            else:
+                self.VRRLabelEntry.delete(0, 'end')
+                self.VRRLabelQEntry.delete(0, 'end')
+                self.HRRLabelEntry.delete(0, 'end')
+                self.HRRLabelQEntry.delete(0, 'end')
+                self.ZRRLabelEntry.delete(0, 'end')
+                self.ZRRLabelQEntry.delete(0, 'end')
+        while True:  # this loop allows for human error with handling the machine. applied to every section
         msgbox = messagebox.showwarning('WARNING',  'EMPTY CAVITY')
-        if msgbox == 'ok':
-            self.ENA.ChamberState = 'e'
-            self.x_axis()
-            self.progress['value'] = 6.66 * 7
-            self.VERLabel1Entry.insert(0, str(DRM.XEFreq1))
-            self.VERLabel1QEntry.insert(0, str(DRM.XEQ2))
-            self.y_axis()
-            self.progress['value'] = 6.66 * 8
-            self.HERLabel1Entry.insert(0, str(DRM.YEFreq1))
-            self.HERLabelQ1Entry.insert(0, str(DRM.YEQ2))
-            self.z_axis()
-            self.progress['value'] = 6.66 * 9
-            self.ZERLabelQ1Entry.insert(0, str(DRM.ZEQ2))
-            self.ZERLabel1Entry.insert(0, str(DRM.ZEFreq1))
-        msgbox = messagebox.showwarning('WARNING',  'PLACE REPLICA IN CAVITY')
-        if msgbox == 'ok':
-            self.ENA.ChamberState = 'r'
-            self.x_axis()
-            self.progress['value'] = 6.66 * 10
-            self.VRRLabelEntry.insert(0, str(DRM.XRFreq))
-            self.VRRLabelQEntry.insert(0, str(DRM.XRQ))
-            self.y_axis()
-            self.progress['value'] = 6.66 * 11
-            self.HRRLabelEntry.insert(0, str(DRM.YRFreq))
-            self.HRRLabelQEntry.insert(0, str(DRM.YRQ))
-            self.z_axis()
-            self.progress['value'] = 6.66 * 12
-            self.ZRRLabelEntry.insert(0, str(DRM.ZRFreq))
-            self.ZRRLabelQEntry.insert(0, str(DRM.ZRQ))
-        msgbox = messagebox.showwarning('WARNING',  'EMPTY CAVITY')
-        if msgbox == 'ok':
-            self.ENA.ChamberState = 'e'
-            self.x_axis()
-            self.progress['value'] = 6.66 * 13
-            self.VERLabel2Entry.insert(0, str(DRM.XEFreq2))
-            self.VERLabelQEntry2.insert(0, str(DRM.XEQ3))
-            self.y_axis()
-            self.progress['value'] = 6.66 * 14
-            self.HERLabel2Entry.insert(0, str(DRM.YEFreq2))
-            self.HERLabelQEntry2.insert(0, str(DRM.YEQ3))
-            self.z_axis()
-            self.progress['value'] = 6.66 * 14.5
-            self.ZERLabel2Entry.insert(0, str(DRM.ZEFreq2))
-            self.ZERLabelQEntry2.insert(0, str(DRM.ZEQ3))
-            self.root.update_idletasks()
+            if msgbox == 'ok':
+                self.ENA.ChamberState = 'e'
+                self.x_axis()
+                self.progress['value'] = 6.66 * 7
+                self.VERLabel1Entry.insert(0, str(DRM.XEFreq1))
+                self.VERLabel1QEntry.insert(0, str(DRM.XEQ2))
+                self.y_axis()
+                self.progress['value'] = 6.66 * 8
+                self.HERLabel1Entry.insert(0, str(DRM.YEFreq1))
+                self.HERLabelQ1Entry.insert(0, str(DRM.YEQ2))
+                self.z_axis()
+                self.progress['value'] = 6.66 * 9
+                self.ZERLabelQ1Entry.insert(0, str(DRM.ZEQ2))
+                self.ZERLabel1Entry.insert(0, str(DRM.ZEFreq1))
+            msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
+            if msgbox == False:  # If measurements are good, continue
+                break
+            else:
+                self.VRRLabelEntry.delete(0, 'end')
+                self.VRRLabelQEntry.delete(0, 'end')
+                self.HRRLabelEntry.delete(0, 'end')
+                self.HRRLabelQEntry.delete(0, 'end')
+                self.ZRRLabelEntry.delete(0, 'end')
+                self.ZRRLabelQEntry.delete(0, 'end')
+        while True:  # this loop allows for human error with handling the machine. applied to every section
+            msgbox = messagebox.showwarning('WARNING',  'PLACE REPLICA IN CAVITY')
+            if msgbox == 'ok':
+                self.ENA.ChamberState = 'r'
+                self.x_axis()
+                self.progress['value'] = 6.66 * 10
+                self.VRRLabelEntry.insert(0, str(DRM.XRFreq))
+                self.VRRLabelQEntry.insert(0, str(DRM.XRQ))
+                self.y_axis()
+                self.progress['value'] = 6.66 * 11
+                self.HRRLabelEntry.insert(0, str(DRM.YRFreq))
+                self.HRRLabelQEntry.insert(0, str(DRM.YRQ))
+                self.z_axis()
+                self.progress['value'] = 6.66 * 12
+                self.ZRRLabelEntry.insert(0, str(DRM.ZRFreq))
+                self.ZRRLabelQEntry.insert(0, str(DRM.ZRQ))
+            msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
+            if msgbox == False:  # If measurements are good, continue
+                break
+            else:
+                self.VRRLabelEntry.delete(0, 'end')
+                self.VRRLabelQEntry.delete(0, 'end')
+                self.HRRLabelEntry.delete(0, 'end')
+                self.HRRLabelQEntry.delete(0, 'end')
+                self.ZRRLabelEntry.delete(0, 'end')
+                self.ZRRLabelQEntry.delete(0, 'end')
+        while True:  # this loop allows for human error with handling the machine. applied to every section
+            msgbox = messagebox.showwarning('WARNING',  'EMPTY CAVITY')
+            if msgbox == 'ok':
+                self.ENA.ChamberState = 'e'
+                self.x_axis()
+                self.progress['value'] = 6.66 * 13
+                self.VERLabel2Entry.insert(0, str(DRM.XEFreq2))
+                self.VERLabelQEntry2.insert(0, str(DRM.XEQ3))
+                self.y_axis()
+                self.progress['value'] = 6.66 * 14
+                self.HERLabel2Entry.insert(0, str(DRM.YEFreq2))
+                self.HERLabelQEntry2.insert(0, str(DRM.YEQ3))
+                self.z_axis()
+                self.progress['value'] = 6.66 * 14.5
+                self.ZERLabel2Entry.insert(0, str(DRM.ZEFreq2))
+                self.ZERLabelQEntry2.insert(0, str(DRM.ZEQ3))
+                self.root.update_idletasks()
+            msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
+            if msgbox == False:  # If measurements are good, continue
+                break
+            else:
+                self.VRRLabelEntry.delete(0, 'end')
+                self.VRRLabelQEntry.delete(0, 'end')
+                self.HRRLabelEntry.delete(0, 'end')
+                self.HRRLabelQEntry.delete(0, 'end')
+                self.ZRRLabelEntry.delete(0, 'end')
+                self.ZRRLabelQEntry.delete(0, 'end')
         self.TempRead()
         DRM.calc(self.ENA)
         self.progress['value'] = 100
