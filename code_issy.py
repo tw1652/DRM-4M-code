@@ -19,7 +19,7 @@ import time
 import os
 import re
 
-num_runs = 10
+num_runs = 3
 
 class DRM(object):
 
@@ -108,206 +108,203 @@ class DRM(object):
         for i in range(num_runs):
             # volume of cavity
             vc = 0.275 * 0.3 * 0.336
-   
+
             # SAMPLE DETAILS
-   
+
             # 1: SAMPLE
             # 2: REPLICA
-   
+
             # sample volumes - from geometry or from mass/density or .stl reader
             self.vs1 = (self.vs1)*0.000001 # m^3 from geometry
             self.vs2 = (self.vs2)*0.000001 # m^3
-   
-   
+
+
             # DATA FROM ENA: EMPTY (AT START)
-   
+
             # measured resonant frequency (MHz) and Q-factor, empty, x, 1, before
             f0_x1_before = DRM.XEFreq
             Q0_x1_before = DRM.XEQ1
-   
+
             # measured resonant frequency (MHz) and Q-factor, empty, y, 1, before
             f0_y1_before = DRM.YEFreq
             Q0_y1_before = DRM.YEQ1
-   
+
             # measured resonant frequency (MHz) and Q-factor, empty, z, 1, before
             f0_z1_before = DRM.ZEFreq
             Q0_z1_before = DRM.ZEQ1
-   
+
             # SPECIMEN 1 (ORIGINAL)
-   
+
             # measured resonant frequency (MHz) and Q-factor, sample 1, x
             f_x1 = DRM.XSFreq
             Q_x1 = DRM.XSQ
-   
+
             # measured resonant frequency (MHz) and Q-factor, sample 1, y
             f_y1 = DRM.YSFreq
             Q_y1 = DRM.YSQ
-   
+
             # measured resonant frequency (MHz) and Q-factor, sample 1, z
             f_z1 = DRM.ZSFreq
             Q_z1 = DRM.ZSQ
-   
+
             # EMPTY (IN BETWEEN SAMPLES 1 AND 2)
-   
+
             # measured resonant frequency (MHz) and Q-factor, empty, x, 1, after
             f0_x1_after = DRM.XEFreq1
             Q0_x1_after = DRM.XEQ2
-   
+
             # measured resonant frequency (MHz) and Q-factor, empty, y, 1, after
             f0_y1_after = DRM.YEFreq1
             Q0_y1_after = DRM.YEQ2
-   
+
             # measured resonant frequency (MHz) and Q-factor, empty, z, 1, after
             f0_z1_after = DRM.ZEFreq1
             Q0_z1_after = DRM.ZEQ2
-   
-   
+
+
             # 'after' for sample 1 is 'before' for sample 2
             # resonant frequency (MHz) and Q-factor, empty, x, 2, before
             f0_x2_before = f0_x1_after
             Q0_x2_before = Q0_x1_after
-   
-   
+
+
             # resonant frequency (MHz) and Q-factor, empty, y, 2, before
             f0_y2_before = f0_y1_after
             Q0_y2_before = Q0_y1_after
-   
-   
+
+
             # resonant frequency (MHz) and Q-factor, empty, z, 2, before
             f0_z2_before = f0_z1_after
             Q0_z2_before = Q0_z1_after
-   
+
             # SAMPLE 2 (REPLICA)
-   
+
             # measured resonant frequency (MHz) and Q-factor, sample 2, x
             f_x2 = DRM.XRFreq
             Q_x2 = DRM.XRQ
-   
+
             # measured resonant frequency (MHz) and Q-factor, sample 2, y
             f_y2 = DRM.YRFreq
             Q_y2 = DRM.YRQ
-   
+
             # measured resonant frequency (MHz) and Q-factor, sample 2, z
             f_z2 = DRM.ZRFreq
             Q_z2 = DRM.ZRQ
-   
+
             # EMPTY (AT END)
-   
+
             # measured resonant frequency (MHz) and Q-factor, empty, x, 2, after
             f0_x2_after = DRM.XEFreq2
             Q0_x2_after = DRM.XEQ3
-   
+
             # measured resonant frequency (MHz) and Q-factor, empty, y, 2, after
             f0_y2_after = DRM.YEFreq2
             Q0_y2_after = DRM.YEQ3
-   
+
             # measured resonant frequency (MHz) and Q-factor, empty, z, 2, after
             f0_z2_after = DRM.ZEFreq2
             Q0_z2_after = DRM.ZEQ3
-   
+
             # TIMING
-   
+
             # weights for f0 and Q0 measured before and after sample 1
             w_x1_before = (self.MeasurementTime[6] - self.MeasurementTime[3]) / (self.MeasurementTime[6] - self.MeasurementTime[0])
             w_x1_after = (self.MeasurementTime[3] - self.MeasurementTime[0]) / (self.MeasurementTime[6] - self.MeasurementTime[0])
-   
-   
+
+
             w_y1_before = (self.MeasurementTime[7] - self.MeasurementTime[4]) / (self.MeasurementTime[7] - self.MeasurementTime[1])
             w_y1_after = (self.MeasurementTime[4] - self.MeasurementTime[1]) / (self.MeasurementTime[7] - self.MeasurementTime[1])
-   
+
             w_z1_before = (self.MeasurementTime[8] - self.MeasurementTime[5]) / (self.MeasurementTime[8] - self.MeasurementTime[2])
             w_z1_after = (self.MeasurementTime[5] - self.MeasurementTime[2]) / (self.MeasurementTime[8] - self.MeasurementTime[2])
-   
+
             # weights for f0 and Q0 measured before and after sample 2
             w_x2_before = (self.MeasurementTime[12] - self.MeasurementTime[9]) / (self.MeasurementTime[12] - self.MeasurementTime[6])
             w_x2_after = (self.MeasurementTime[9] - self.MeasurementTime[6]) / (self.MeasurementTime[12] - self.MeasurementTime[6])
-   
+
             w_y2_before = (self.MeasurementTime[13] - self.MeasurementTime[10]) / (self.MeasurementTime[13] - self.MeasurementTime[7])
             w_y2_after = (self.MeasurementTime[10] - self.MeasurementTime[7]) / (self.MeasurementTime[13] - self.MeasurementTime[7])
-   
+
             w_z2_before = (self.MeasurementTime[14] - self.MeasurementTime[11]) / (self.MeasurementTime[14] - self.MeasurementTime[8])
             w_z2_after = (self.MeasurementTime[11] - self.MeasurementTime[8]) / (self.MeasurementTime[14] - self.MeasurementTime[8])
-   
+
             # EMPTY 1 WEIGHTED AVERAGE
-   
+
             # measured resonant frequency (MHz) and Q-factor, empty, x, 1
             # mean of 'before' and 'after'
             f0_x1 = w_x1_before * f0_x1_before + w_x1_after * f0_x1_after
             Q0_x1 = w_x1_before * Q0_x1_before + w_x1_after * Q0_x1_after
-   
+
             # measured resonant frequency (MHz) and Q-factor, empty, y, 1
             # mean of 'before' and 'after'
             f0_y1 = w_y1_before * f0_y1_before + w_y1_after * f0_y1_after
             Q0_y1 = w_y1_before * Q0_y1_before + w_y1_after * Q0_y1_after
-   
+
             # measured resonant frequency (MHz) and Q-factor, empty, z, 1
             # mean of 'before' and 'after'
             f0_z1 = w_z1_before * f0_z1_before + w_z1_after * f0_z1_after
             Q0_z1 = w_z1_before * Q0_z1_before + w_z1_after * Q0_z1_after
-   
+
             # EMPTY 2 WEIGHTED AVERAGE
-   
+
             # measured resonant frequency (MHz) and Q-factor, empty, x, 2
             # mean of 'before' and 'after'
             f0_x2 = w_x2_before * f0_x2_before + w_x2_after * f0_x2_after
             Q0_x2 = w_x2_before * Q0_x2_before + w_x2_after * Q0_x2_after
-   
-   
+
+
             # measured resonant frequency (MHz) and Q-factor, empty, y, 2
             # mean of 'before' and 'after'
             f0_y2 = w_y2_before * f0_y2_before + w_y2_after * f0_y2_after
             Q0_y2 = w_y2_before * Q0_y2_before + w_y2_after * Q0_y2_after
-   
+
             # measured resonant frequency (MHz) and Q-factor, empty, z, 2
             # mean of 'before' and 'after'
             f0_z2 = w_z2_before * f0_z2_before + w_z2_after * f0_z2_after
             Q0_z2 = w_z2_before * Q0_z2_before + w_z2_after * Q0_z2_after
-   
+
             # CALCULATE COMPLEX PERMITTIVITY
-   
+
             # shifts in complex frequency
             self.deltaOmega_x1 = (f_x1 - f0_x1) / f0_x1 + 0.5 * 1j * (1. / Q_x1 - 1. / Q0_x1)
             self.deltaOmega_y1 = (f_y1 - f0_y1) / f0_y1 + 0.5 * 1j * (1. / Q_y1 - 1. / Q0_y1)
             self.deltaOmega_z1 = (f_z1 - f0_z1) / f0_z1 + 0.5 * 1j * (1. / Q_z1 - 1. / Q0_z1)
-   
+
             self.sig_r_omega1 = 1. / self.deltaOmega_x1 + 1. / self.deltaOmega_y1 + 1. / self.deltaOmega_z1
-   
+
             # or measured data (comment out if using previous data)
             self.deltaOmega_x2 = (f_x2 - f0_x2) / f0_x2 + 0.5 * 1j * (1. / Q_x2 - 1. / Q0_x2)
             self.deltaOmega_y2 = (f_y2 - f0_y2) / f0_y2 + 0.5 * 1j * (1. / Q_y2 - 1. / Q0_y2)
             self.deltaOmega_z2 = (f_z2 - f0_z2) / f0_z2 + 0.5 * 1j * (1. / Q_z2 - 1. / Q0_z2)
-   
+
             self.sig_r_omega2 = 1. / self.deltaOmega_x2 + 1. / self.deltaOmega_y2 + 1. / self.deltaOmega_z2
-   
-   
+
+
             # Clausius-Mosotti factor for material 2 (replica)
             self.alpha2 = (self.e_star2 - 1) / (self.e_star2 + 2)
-   
+
             # new analysis, quadratic fit
-   
+
             p = [-0.056155651313900 + 0.000580840419927j,
                  -0.468920921941625 + 0.000960280535180j,
                  0.0000 + 0.0000j]
-   
+
             # permittivity estimates from volume only
             self.alpha1_vol = np.polyval(p, vc / (self.vs1 * self.sig_r_omega1))
             self.e_star1_vol = (1 + 2 * self.alpha1_vol) / (1 - self.alpha1_vol)
             self.alpha2_vol = np.polyval(p, vc / (self.vs2 * self.sig_r_omega2))
             self.e_star2_vol = (1 + 2 * self.alpha2_vol) / (1 - self.alpha2_vol)
-   
+
             # Clausius-Mosotti factor for material 1 (original)
-   
+
             self.alpha1 = self.alpha2 * np.polyval(p, vc / (self.vs1 * self.sig_r_omega1)) / np.polyval(p, vc / (self.vs2 * self.sig_r_omega2))
-   
+
             # permittivity of material 1 (SPECIMEN)
             self.e_star1 = (1 + (2 * self.alpha1)) / (1 - self.alpha1)
             print(self.e_star1)
-   
+
             # loss tangent of material 1 (original)
             self.tand = -np.imag(self.e_star1) / np.real(self.e_star1)
-           
-            # Print or store the results if needed
-            print("Run", i + 1, "completed.")
 
             # Add a delay to control the frequency of calculations
             time.sleep(10)  # Adjust the delay time as needed
@@ -1004,12 +1001,12 @@ class GUI(object):
             if msgbox == False:  # If measurements are good, continue
                 break
             else:
-                self.VRRLabelEntry.delete(0, 'end')
-                self.VRRLabelQEntry.delete(0, 'end')
-                self.HRRLabelEntry.delete(0, 'end')
-                self.HRRLabelQEntry.delete(0, 'end')
-                self.ZRRLabelEntry.delete(0, 'end')
-                self.ZRRLabelQEntry.delete(0, 'end')
+                self.VERLabelEntry.delete(0, 'end')
+                self.VERLabelQEntry.delete(0, 'end')
+                self.HERLabelEntry.delete(0, 'end')
+                self.HERLabelQEntry.delete(0, 'end')
+                self.ZERLabelEntry.delete(0, 'end')
+                self.ZERLabelQEntry.delete(0, 'end')
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'PLACE ORIGINAL IN CAVITY')
             if msgbox == 'ok':
@@ -1030,14 +1027,14 @@ class GUI(object):
             if msgbox == False:  # If measurements are good, continue
                 break
             else:
-                self.VRRLabelEntry.delete(0, 'end')
-                self.VRRLabelQEntry.delete(0, 'end')
-                self.HRRLabelEntry.delete(0, 'end')
-                self.HRRLabelQEntry.delete(0, 'end')
-                self.ZRRLabelEntry.delete(0, 'end')
-                self.ZRRLabelQEntry.delete(0, 'end')
+                self.VSRLabelEntry.delete(0, 'end')
+                self.VSRLabelQEntry.delete(0, 'end')
+                self.HSRLabelEntry.delete(0, 'end')
+                self.HSRLabelQEntry.delete(0, 'end')
+                self.ZSRLabelEntry.delete(0, 'end')
+                self.ZSRLabelQEntry.delete(0, 'end')
         while True:  # this loop allows for human error with handling the machine. applied to every section
-        msgbox = messagebox.showwarning('WARNING',  'EMPTY CAVITY')
+            msgbox = messagebox.showwarning('WARNING',  'EMPTY CAVITY')
             if msgbox == 'ok':
                 self.ENA.ChamberState = 'e'
                 self.x_axis()
@@ -1056,12 +1053,12 @@ class GUI(object):
             if msgbox == False:  # If measurements are good, continue
                 break
             else:
-                self.VRRLabelEntry.delete(0, 'end')
-                self.VRRLabelQEntry.delete(0, 'end')
-                self.HRRLabelEntry.delete(0, 'end')
-                self.HRRLabelQEntry.delete(0, 'end')
-                self.ZRRLabelEntry.delete(0, 'end')
-                self.ZRRLabelQEntry.delete(0, 'end')
+                self.VERLabel1Entry.delete(0, 'end')
+                self.VERLabelQ1Entry.delete(0, 'end')
+                self.HERLabel1Entry.delete(0, 'end')
+                self.HERLabelQ1Entry.delete(0, 'end')
+                self.ZERLabel1Entry.delete(0, 'end')
+                self.ZERLabelQ1Entry.delete(0, 'end')
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'PLACE REPLICA IN CAVITY')
             if msgbox == 'ok':
@@ -1109,12 +1106,12 @@ class GUI(object):
             if msgbox == False:  # If measurements are good, continue
                 break
             else:
-                self.VRRLabelEntry.delete(0, 'end')
-                self.VRRLabelQEntry.delete(0, 'end')
-                self.HRRLabelEntry.delete(0, 'end')
-                self.HRRLabelQEntry.delete(0, 'end')
-                self.ZRRLabelEntry.delete(0, 'end')
-                self.ZRRLabelQEntry.delete(0, 'end')
+                self.VERLabel2Entry.delete(0, 'end')
+                self.VERLabelQEntry2.delete(0, 'end')
+                self.HERLabel2Entry.delete(0, 'end')
+                self.HERLabelQEntry2.delete(0, 'end')
+                self.ZERLabel2Entry.delete(0, 'end')
+                self.ZERLabelQEntry2.delete(0, 'end')
         self.TempRead()
         DRM.calc(self.ENA)
         self.progress['value'] = 100
@@ -1170,7 +1167,7 @@ class GUI(object):
             vs2_str = re.sub("[^0-9.]", "", vs2_str)
             self.VS2LabelEntry.insert(0, vs2_str)
             vs2p_str = str(lines[6][23:36])
-            vs2p_str = re.sub("[^0-9.-j-]", "", vs2p_str)
+            vs2p_str = re.sub("[^0-9.+-j-]", "", vs2p_str)
             self.VS2PLabelEntry.insert(0, vs2p_str)
 
     def create_report(self):
@@ -1183,8 +1180,12 @@ class GUI(object):
         fh = open(self.filename+"/drm_GUI_analysis%s.txt" % j, "w")
         fh.write("Operating Conditions\n")
         fh.write("%s\n" % datetime.datetime.now())
-        fh.write("Temperature: %s °C\n" % self.ENA.temperature)
-        fh.write("Humidity: %s" % self.ENA.humidity)
+        try:
+            fh.write("Temperature: %s °C\n" % self.ENA.temperature)
+            fh.write("Humidity: %s" % self.ENA.humidity)
+        except:
+            fh.write("Temperature: Not Read\n")
+            fh.write("Humidity: Not Read")
         fh.write("%\n")
         fh.write("SAMPLE VOLUME: %s\n" % self.ENA.vs1)
         fh.write("REPLICA VOLUME: %s\n" % self.ENA.vs2)
