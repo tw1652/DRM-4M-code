@@ -107,7 +107,7 @@ class DRM(object):
     def calc(self):
         for i in range(num_runs):
             # volume of cavity
-            vc = 0.275 * 0.3 * 0.336
+            vc = 0.149 * 0.141 * 0.169
 
             # SAMPLE DETAILS
 
@@ -844,8 +844,8 @@ class GUI(object):
         time.sleep(5)
         self.ENA.Arduino_Serial.close()
         self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
-        self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
-        self.ENA.write(':SENS:FREQ:STOP 1500 MHz;*WAI')
+        self.ENA.write(':SENS:FREQ:STAR 1200 MHz;*WAI')
+        self.ENA.write(':SENS:FREQ:STOP 1400 MHz;*WAI')
         time.sleep(10)
         self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
         self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
@@ -966,6 +966,8 @@ class GUI(object):
                 self.ENA.Arduino_Serial.close()
                 self.ENA.temperature = temp_data[-5:]
                 self.ENA.humidity = temp_data[:5]
+                if self.ENA.temperature == self.ENA.humidity:
+                    int("t")
                 break # Ends the Loop
             except:  # If failed, set reading to Not Read
                 msgbox = messagebox.askyesno('Temperature read failed', 'Do you want to try and read again?') # Prompts the user if they want to try again
@@ -975,7 +977,7 @@ class GUI(object):
                         self.ENA.temperature = ("Not Read")
                     else:
                         self.ENA.temperature = (self.manual)
-                    self.ENA.humidity("Not Read") # automatically assigns humidity as not read due to less likely to have a humidity sensor to hand
+                    self.ENA.humidity= ("Not Read") # automatically assigns humidity as not read due to less likely to have a humidity sensor to hand
                     break # Ends the Loop
 
 
