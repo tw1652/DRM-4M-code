@@ -1111,7 +1111,7 @@ class GUI(object):
             if msgbox == False:  # If measurements are good, continue
                 break
             else:
-                self.ENA.MeasurementNum -= 1
+                self.ENA.MeasurementNum -= 1 # deincrementation
                 self.VERLabel2Entry.delete(0, 'end')
                 self.VERLabelQEntry2.delete(0, 'end')
                 self.HERLabel2Entry.delete(0, 'end')
