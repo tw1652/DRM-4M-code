@@ -706,6 +706,7 @@ class GUI(object):
         # Frequency Displays:
         ##################################
         # GUI FOR EMPTY RESULTS 1
+        self.ENA.MeasurementNum = 0
         self.VERLabelEntry.delete(0, 'end')
         self.VERLabelQEntry.delete(0, 'end')
         self.HERLabelEntry.delete(0, 'end')
@@ -1003,6 +1004,7 @@ class GUI(object):
             if msgbox == False:  # If measurements are good, continue
                 break
             else:
+                self.ENA.MeasurementNum -= 1
                 self.VERLabelEntry.delete(0, 'end')
                 self.VERLabelQEntry.delete(0, 'end')
                 self.HERLabelEntry.delete(0, 'end')
@@ -1055,8 +1057,9 @@ class GUI(object):
             if msgbox == False:  # If measurements are good, continue
                 break
             else:
+                self.ENA.MeasurementNum -= 1
                 self.VERLabel1Entry.delete(0, 'end')
-                self.VERLabelQ1Entry.delete(0, 'end')
+                self.VERLabel1QEntry.delete(0, 'end')
                 self.HERLabel1Entry.delete(0, 'end')
                 self.HERLabelQ1Entry.delete(0, 'end')
                 self.ZERLabel1Entry.delete(0, 'end')
@@ -1108,6 +1111,7 @@ class GUI(object):
             if msgbox == False:  # If measurements are good, continue
                 break
             else:
+                self.ENA.MeasurementNum -= 1
                 self.VERLabel2Entry.delete(0, 'end')
                 self.VERLabelQEntry2.delete(0, 'end')
                 self.HERLabel2Entry.delete(0, 'end')
