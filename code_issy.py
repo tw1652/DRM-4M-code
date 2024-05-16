@@ -8,7 +8,6 @@ import pyvisa
 import serial
 import numpy as np
 import datetime
-import cmath
 from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox
@@ -19,7 +18,7 @@ import time
 import os
 import re
 
-num_runs = 3
+num_runs = 1
 
 class DRM(object):
 
@@ -105,23 +104,13 @@ class DRM(object):
 
 
     def calc(self):
+        # volume of cavity
+        vc = 0.149 * 0.141 * 0.169
+        self.vs1 = (self.vs1) * 0.000001  # m^3 from geometry
+        self.vs2 = (self.vs2) * 0.000001  # m^3
+
         for i in range(num_runs):
-            # volume of cavity
-            vc = 0.149 * 0.141 * 0.169
 
-            # SAMPLE DETAILS
-
-            # 1: SAMPLE
-            # 2: REPLICA
-
-            # sample volumes - from geometry or from mass/density or .stl reader
-            self.vs1 = (self.vs1)*0.000001 # m^3 from geometry
-            self.vs2 = (self.vs2)*0.000001 # m^3
-
-
-            # DATA FROM ENA: EMPTY (AT START)
-
-            # measured resonant frequency (MHz) and Q-factor, empty, x, 1, before
             f0_x1_before = DRM.XEFreq
             Q0_x1_before = DRM.XEQ1
 
@@ -703,10 +692,11 @@ class GUI(object):
 
     def new_measurement(self):
 
+        # Empty Measurement Incrementer reset
+        self.ENA.MeasurementNum = 0
         # Frequency Displays:
         ##################################
         # GUI FOR EMPTY RESULTS 1
-        self.ENA.MeasurementNum = 0
         self.VERLabelEntry.delete(0, 'end')
         self.VERLabelQEntry.delete(0, 'end')
         self.HERLabelEntry.delete(0, 'end')
