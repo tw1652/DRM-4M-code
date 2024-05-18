@@ -695,6 +695,8 @@ class GUI(object):
 
         # Empty Measurement Incrementer reset
         self.ENA.MeasurementNum = 0
+        # Progress bar reset
+        self.progress['value'] = 0
         # Frequency Displays:
         ##################################
         # GUI FOR EMPTY RESULTS 1
