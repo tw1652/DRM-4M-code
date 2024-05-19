@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Spyder Editor
 
-This is a temporary script file.
-"""
 import pyvisa
 import serial
 import numpy as np
@@ -19,7 +14,7 @@ import os
 import re
 
 num_runs = 1 # Number of measured runs
-###ff
+
 
 class DRM(object):
 
@@ -952,8 +947,8 @@ class GUI(object):
         while True: ## Loop continues until one of the predetermined ends is reached
             try:  # Attempt to read the temperature
                 self.ENA.Arduino_Serial.open()
-                time.sleep(3)
                 self.mode = 3 # Sending Mode 3 to the Arduino sets it to DHT mode
+                time.sleep(3)
                 self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))
                 temp_data = self.ENA.Arduino_Serial.readline().decode('utf-8').strip()  # deg. C
                 temp_data = re.sub("[^0-9.]", "", temp_data) # These two lines sanatise the output and remove any extra characters
