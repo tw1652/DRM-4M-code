@@ -15,7 +15,7 @@ import re
 
 num_runs = 1 # Number of measured runs
 
-# test comment so MPR can see it has been updated - and again
+# test comment so MPR can see it has been updated - and again - and one more
 
 class DRM(object):
 
