@@ -960,6 +960,7 @@ class GUI(object):
                     int("t")
                 break # Ends the Loop
             except:  # If failed, set reading to Not Read
+                print('\a')
                 msgbox = messagebox.askyesno('Temperature read failed', 'Do you want to try and read again?') # Prompts the user if they want to try again
                 if msgbox == False:
                     self.manual = simpledialog.askstring("Manual input", "Please enter temperature manually") # Prompts the user to enter the temperature manually
@@ -989,6 +990,7 @@ class GUI(object):
                 self.progress['value'] = 6.66*3
                 self.ZERLabelEntry.insert(0, str(DRM.ZEFreq))
                 self.ZERLabelQEntry.insert(0, str(DRM.ZEQ1))
+            print('\a')
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
                 break
@@ -1016,6 +1018,7 @@ class GUI(object):
                 self.progress['value'] = 6.66 * 6
                 self.ZSRLabelEntry.insert(0, str(DRM.ZSFreq))
                 self.ZSRLabelQEntry.insert(0, str(DRM.ZSQ))
+            print('\a')
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
                 break
@@ -1042,6 +1045,7 @@ class GUI(object):
                 self.progress['value'] = 6.66 * 9
                 self.ZERLabelQ1Entry.insert(0, str(DRM.ZEQ2))
                 self.ZERLabel1Entry.insert(0, str(DRM.ZEFreq1))
+            print('\a')
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
                 break
@@ -1069,6 +1073,7 @@ class GUI(object):
                 self.progress['value'] = 6.66 * 12
                 self.ZRRLabelEntry.insert(0, str(DRM.ZRFreq))
                 self.ZRRLabelQEntry.insert(0, str(DRM.ZRQ))
+            print('\a')
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
                 break
@@ -1096,6 +1101,7 @@ class GUI(object):
                 self.ZERLabel2Entry.insert(0, str(DRM.ZEFreq2))
                 self.ZERLabelQEntry2.insert(0, str(DRM.ZEQ3))
                 self.root.update_idletasks()
+            print('\a')
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
                 break
