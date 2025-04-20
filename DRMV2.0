@@ -1,4 +1,3 @@
-
 import pyvisa
 import serial
 import numpy as np
@@ -122,16 +121,16 @@ class DRM(object):
             # SPECIMEN 1 (ORIGINAL)
 
             # measured resonant frequency (MHz) and Q-factor, sample 1, x
-            f_x1 = DRM.XSFreq
-            Q_x1 = DRM.XSQ
+            f_x1 = DRM.s_average_freq_x
+            Q_x1 = DRM.s_average_q_x
 
             # measured resonant frequency (MHz) and Q-factor, sample 1, y
-            f_y1 = DRM.YSFreq
-            Q_y1 = DRM.YSQ
+            f_y1 = DRM.s_average_freq_y
+            Q_y1 = DRM.s_average_q_y
 
             # measured resonant frequency (MHz) and Q-factor, sample 1, z
-            f_z1 = DRM.ZSFreq
-            Q_z1 = DRM.ZSQ
+            f_z1 = DRM.s_average_freq_z
+            Q_z1 = DRM.s_average_q_z
 
             # EMPTY (IN BETWEEN SAMPLES 1 AND 2)
 
@@ -166,16 +165,16 @@ class DRM(object):
             # SAMPLE 2 (REPLICA)
 
             # measured resonant frequency (MHz) and Q-factor, sample 2, x
-            f_x2 = DRM.XRFreq
-            Q_x2 = DRM.XRQ
+            f_x2 = DRM.r_average_freq_x
+            Q_x2 = DRM.r_average_q_x
 
             # measured resonant frequency (MHz) and Q-factor, sample 2, y
-            f_y2 = DRM.YRFreq
-            Q_y2 = DRM.YRQ
+            f_y2 = DRM.r_average_freq_y
+            Q_y2 = DRM.r_average_q_y
 
             # measured resonant frequency (MHz) and Q-factor, sample 2, z
-            f_z2 = DRM.ZRFreq
-            Q_z2 = DRM.ZRQ
+            f_z2 = DRM.r_average_freq_z
+            Q_z2 = DRM.r_average_q_z
 
             # EMPTY (AT END)
 
@@ -1027,20 +1026,39 @@ class GUI(object):
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'PLACE ORIGINAL IN CAVITY')
             if msgbox == 'ok':
+                sample_freq_x, sample_q_x = [], [] # List of sample values to store through the loop
+                sample_freq_y, sample_q_y = [], []
+                sample_freq_z, sample_q_z = [], []
                 for i in range(num_rotations):
                     self.ENA.ChamberState = 's'
                     self.x_axis()
                     self.progress['value'] = 6.66*4
+                    sample_freq_x.append(DRM.XSFreq)
+                    sample_q_x.append(DRM.XSQ)
                     self.VSRLabelQEntry.insert(0, str(DRM.XSQ))
                     self.VSRLabelEntry.insert(0, str(DRM.XSFreq))
+
                     self.y_axis()
                     self.progress['value'] = 6.66 * 5
+                    sample_freq_y.append(DRM.XSFreq)
+                    sample_q_y.append(DRM.XSQ)
                     self.HSRLabelEntry.insert(0, str(DRM.YSFreq))
                     self.HSRLabelQEntry.insert(0, str(DRM.YSQ))
+
                     self.z_axis()
                     self.progress['value'] = 6.66 * 6
+                    sample_freq_z.append(DRM.XSFreq)
+                    sample_q_z.append(DRM.XSQ)
                     self.ZSRLabelEntry.insert(0, str(DRM.ZSFreq))
                     self.ZSRLabelQEntry.insert(0, str(DRM.ZSQ))
+
+                    s_average_freq_x = sum(sample_freq_x)/len(sample_freq_x)
+                    s_average_freq_y = sum(sample_freq_y)/len(sample_freq_y)
+                    s_average_freq_z = sum(sample_freq_z)/len(sample_freq_z)
+                    s_average_q_x = sum(sample_q_x)/len(sample_q_x)
+                    s_average_q_y = sum(sample_q_y)/len(sample_q_y)
+                    s_average_q_z = sum(sample_q_z)/len(sample_q_z)
+
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
                 break
@@ -1081,20 +1099,38 @@ class GUI(object):
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'PLACE REPLICA IN CAVITY')
             if msgbox == 'ok':
+                replica_freq_x, replica_q_x = [], []  # List of replica values to store through the loop
+                replica_freq_y, replica_q_y = [], []
+                replica_freq_z, replica_q_z = [], []
                 for i in range(num_rotations):
                     self.ENA.ChamberState = 'r'
                     self.x_axis()
                     self.progress['value'] = 6.66 * 10
+                    replica_freq_x.append(DRM.XRFreq)
+                    replica_q_x.append(DRM.XRQ)
                     self.VRRLabelEntry.insert(0, str(DRM.XRFreq))
                     self.VRRLabelQEntry.insert(0, str(DRM.XRQ))
+
                     self.y_axis()
                     self.progress['value'] = 6.66 * 11
+                    replica_freq_y.append(DRM.YRFreq)
+                    replica_q_y.append(DRM.YRQ)
                     self.HRRLabelEntry.insert(0, str(DRM.YRFreq))
                     self.HRRLabelQEntry.insert(0, str(DRM.YRQ))
+
                     self.z_axis()
                     self.progress['value'] = 6.66 * 12
+                    replica_freq_z.append(DRM.ZRFreq)
+                    replica_q_z.append(DRM.ZRQ)
                     self.ZRRLabelEntry.insert(0, str(DRM.ZRFreq))
                     self.ZRRLabelQEntry.insert(0, str(DRM.ZRQ))
+
+                    r_average_freq_x = sum(replica_freq_x) / len(replica_freq_x)
+                    r_average_freq_y = sum(replica_freq_y) / len(replica_freq_y)
+                    r_average_freq_z = sum(replica_freq_z) / len(replica_freq_z)
+                    r_average_q_x = sum(replica_q_x) / len(replica_q_x)
+                    r_average_q_y = sum(replica_q_y) / len(replica_q_y)
+                    r_average_q_z = sum(replica_q_z) / len(replica_q_z)
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
                 break
