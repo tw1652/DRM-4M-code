@@ -770,11 +770,9 @@ class GUI(object):
     def rotation(self):
         # RLabelTxt taken in the GUI
         # This is the function to rotate the sample, this can be called after x, y and z axes are measured.
-        degrees = float(self.RLabelEntry.get()) # get value of degrees entered
-        num_rotations = int(degrees/20) # make the muber of rotaitons calculated an integer for later for loop use
         self.ENA.Arduino_Serial.open()  # Opens arduino serial port
         time.sleep(2)
-        self.mode = 3 #corresponds to mode 3, which is to rotate the sample
+        self.mode = 3 # Corresponds to mode 3, which is to rotate the sample
         self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8')) # sends over "self.mode" via serial
         self.ENA.Arduino_Serial.write(str(degrees).encode('utf-8')) # Also need to pass over the values for the angles (0 to 180 degrees)
         time.sleep(5)
@@ -1026,10 +1024,13 @@ class GUI(object):
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'PLACE ORIGINAL IN CAVITY')
             if msgbox == 'ok':
+                degrees = float(self.RLabelEntry.get())  # get value of degrees entered
+                num_rotations = int(degrees / 20)  # make the number of rotations calculated an integer for later for loop use
                 sample_freq_x, sample_q_x = [], [] # List of sample values to store through the loop
                 sample_freq_y, sample_q_y = [], []
                 sample_freq_z, sample_q_z = [], []
                 for i in range(num_rotations):
+                    self.rotation() # Rotates turntable by angle specified
                     self.ENA.ChamberState = 's'
                     self.x_axis()
                     self.progress['value'] = 6.66*4
@@ -1102,7 +1103,11 @@ class GUI(object):
                 replica_freq_x, replica_q_x = [], []  # List of replica values to store through the loop
                 replica_freq_y, replica_q_y = [], []
                 replica_freq_z, replica_q_z = [], []
+                # NOT SURE IF WE NEED THESE LINES AGAIN HERE AFTER THE FIRST SAMPLE?
+                degrees = float(self.RLabelEntry.get())  # get value of degrees entered
+                num_rotations = int(degrees / 20)  # make the number of rotations calculated an integer for later for loop use
                 for i in range(num_rotations):
+                    self.rotation()
                     self.ENA.ChamberState = 'r'
                     self.x_axis()
                     self.progress['value'] = 6.66 * 10
@@ -1253,24 +1258,24 @@ class GUI(object):
         fh.write("Q EMPTY Y1: %s\n" % DRM.YEQ1)
         fh.write("FREQ EMPTY Z1: %s\n" % DRM.ZEFreq)
         fh.write("Q EMPTY Z1: %s\n" % DRM.ZEQ1)
-        fh.write("FREQ SAMPLE X: %s\n" % DRM.XSFreq)
-        fh.write("Q SAMPLE X: %s\n" % DRM.XSQ)
-        fh.write("FREQ SAMPLE Y: %s\n" % DRM.YSFreq)
-        fh.write("Q SAMPLE Y: %s\n" % DRM.YSQ)
-        fh.write("FREQ SAMPLE Z: %s\n" % DRM.ZSFreq)
-        fh.write("Q SAMPLE Z: %s\n" % DRM.ZSQ)
+        fh.write("FREQ SAMPLE X AVG: %s\n" % DRM.s_average_freq_x)
+        fh.write("Q SAMPLE X AVG: %s\n" % DRM.s_average_q_x)
+        fh.write("FREQ SAMPLE Y AVG: %s\n" % DRM.s_average_freq_y)
+        fh.write("Q SAMPLE Y AVG: %s\n" % DRM.s_average_q_y)
+        fh.write("FREQ SAMPLE Z AVG: %s\n" % DRM.s_average_freq_z)
+        fh.write("Q SAMPLE Z AVG: %s\n" % DRM.s_average_q_z)
         fh.write("FREQ EMPTY X2: %s\n" % DRM.XEFreq1)
         fh.write("Q EMPTY X2: %s\n" % DRM.XEQ2)
         fh.write("FREQ EMPTY Y2: %s\n" % DRM.YEFreq1)
         fh.write("Q EMPTY Y2: %s\n" % DRM.YEQ2)
         fh.write("FREQ EMPTY Z2: %s\n" % DRM.ZEFreq1)
         fh.write("Q EMPTY Z2: %s\n" % DRM.ZEQ2)
-        fh.write("FREQ REPLICA X: %s\n" % DRM.XRFreq)
-        fh.write("Q REPLICA X: %s\n" % DRM.XRQ)
-        fh.write("FREQ REPLICA Y: %s\n" % DRM.YRFreq)
-        fh.write("Q REPLICA Y: %s\n" % DRM.YRQ)
-        fh.write("FREQ REPLICA Z: %s\n" % DRM.ZRFreq)
-        fh.write("Q REPLICA Z: %s\n" % DRM.ZRQ)
+        fh.write("FREQ REPLICA X AVG: %s\n" % DRM.r_average_freq_x)
+        fh.write("Q REPLICA X AVG: %s\n" % DRM.r_average_q_x)
+        fh.write("FREQ REPLICA Y AVG: %s\n" % DRM.r_average_freq_y)
+        fh.write("Q REPLICA Y AVG: %s\n" % DRM.r_average_q_y)
+        fh.write("FREQ REPLICA Z AVG: %s\n" % DRM.r_average_freq_z)
+        fh.write("Q REPLICA Z AVG: %s\n" % DRM.r_average_q_z)
         fh.write("FREQ EMPTY X3: %s\n" % DRM.XEFreq2)
         fh.write("Q EMPTY X3: %s\n" % DRM.XEQ3)
         fh.write("FREQ EMPTY Y3: %s\n" % DRM.YEFreq2)
