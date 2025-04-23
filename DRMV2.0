@@ -20,6 +20,13 @@ class DRM(object):
 
     def __init__(self):
 
+        self.sample_freq_x = []
+        self.sample_q_x = []  # List of sample values to store through the loop
+        self.sample_freq_y = []
+        self.sample_q_y = []
+        self.sample_freq_z = []
+        self.sample_q_z = []
+
         self.ChamberState = [  # possible subject positions
             ('Empty', 'e'),
             ('Replica', 'r'),
@@ -295,7 +302,6 @@ class DRM(object):
             time.sleep(10)  # Adjust the delay time as needed
 
 class GUI(object):
-
 
     def __init__(self):  # Initialise the GUI
 
@@ -692,6 +698,20 @@ class GUI(object):
         self.root.wm_title("DRM Measurement Facility")
         self.root.mainloop()
 
+        self.sample_freq_x = [] # List of sample values to store through the loop. This must be done in DRM too
+        self.sample_q_x = []
+        self.sample_freq_y = []
+        self.sample_q_y = []
+        self.sample_freq_z = []
+        self.sample_q_z = []
+
+        self.s_average_freq_x = 0  # same here for all these as XSFreq and sample_freq_x etc.
+        self.s_average_q_x = 0
+        self.s_average_freq_y = 0
+        self.s_average_q_y = 0
+        self.s_average_freq_z = 0
+        self.s_average_q_z = 0
+
     def terminate(self):
         self.root.destroy()
         sys.exit()
@@ -765,17 +785,20 @@ class GUI(object):
         self.ENA.vs1 = float(self.VS1LabelEntry.get()) # grabs all the values entered in the parameters tab
         self.ENA.vs2 = float(self.VS2LabelEntry.get())
         self.ENA.e_star2 = complex(self.VS2PLabelEntry.get())
-        self.EMA.r = float(self.RLabelEntry.get())
+        self.ENA.r = float(self.RLabelEntry.get())
 
     def rotation(self):
         # RLabelTxt taken in the GUI
+        degrees = float(self.RLabelEntry.get())  # get value of degrees entered
         # This is the function to rotate the sample, this can be called after x, y and z axes are measured.
         self.ENA.Arduino_Serial.open()  # Opens arduino serial port
         time.sleep(2)
         self.mode = 3 # Corresponds to mode 3, which is to rotate the sample
         self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8')) # sends over "self.mode" via serial
+        time.sleep(2)
         self.ENA.Arduino_Serial.write(str(degrees).encode('utf-8')) # Also need to pass over the values for the angles (0 to 180 degrees)
         time.sleep(5)
+        self.ENA.Arduino_Serial.close()
 
 
     def x_axis(self):
@@ -785,21 +808,21 @@ class GUI(object):
         self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))
         time.sleep(5)
         self.ENA.Arduino_Serial.close()
-            if self.ENA.MeasurementNum == 0:
-                self.ENA.write(':SOURce:POWer:LEVel:IMMediate:AMPLitude %G' % (5.0))  ## 10 too high, as performance at this level is not specified. 7.0 is the max without this error
-                self.ENA.write('CONF "FILT:TRAN"; *WAI')
-                self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
-                self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
-                self.ENA.write(':SENS:FREQ:STOP 1500 MHz;*WAI')
-                self.ENA.write(':CALC:MARK:BWID -3')
-                self.ENA.write(':SENSe:SWEep:POINts 201')
-                time.sleep(10)
-                self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
-                self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
-                self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-                self.BWID = round(self.results[0], -3) * 1.05 #This 1.05 decides the bandwidth when zooming in, can be increased if struggling to find bandwidth
-                self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
-                self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
+        if self.ENA.MeasurementNum == 0:
+            self.ENA.write(':SOURce:POWer:LEVel:IMMediate:AMPLitude %G' % (5.0))  ## 10 too high, as performance at this level is not specified. 7.0 is the max without this error
+            self.ENA.write('CONF "FILT:TRAN"; *WAI')
+            self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
+            self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
+            self.ENA.write(':SENS:FREQ:STOP 1500 MHz;*WAI')
+            self.ENA.write(':CALC:MARK:BWID -3')
+            self.ENA.write(':SENSe:SWEep:POINts 201')
+            time.sleep(10)
+            self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
+            self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
+            self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
+            self.BWID = round(self.results[0], -3) * 1.10 #This 1.10 decides the bandwidth when zooming in, can be increased if struggling to find bandwidth
+            self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
+            self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
             self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
             self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
             self.ENA.write(':SENS:FREQ:STOP 1500 MHz;*WAI')
@@ -807,7 +830,7 @@ class GUI(object):
             self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
             self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
             self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-            self.BWID = round(self.results[0], -3) * 1.05
+            self.BWID = round(self.results[0], -3) * 1.10
             self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
             self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
             print("x")
@@ -862,7 +885,7 @@ class GUI(object):
         self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
         self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
         self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-        self.BWID = round(self.results[0], -3) * 1.05
+        self.BWID = round(self.results[0], -3) * 1.10
         self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
         self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
         print("y")
@@ -919,7 +942,7 @@ class GUI(object):
         self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
         self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
         self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-        self.BWID = round(self.results[0], -3) * 1.05
+        self.BWID = round(self.results[0], -3) * 1.10
         self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
         self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
         print("z")
@@ -993,6 +1016,23 @@ class GUI(object):
                     break # Ends the Loop
 
     def run(self):
+        DRM.XSFreq = 0  # Put these here so XSFreq and XSQ are used in "run" so that it can find it, otherwise has a fit
+        DRM.XSQ = 0
+        DRM.XRFreq = 0
+        DRM.XRQ = 0
+        self.sample_freq_x = [] # List of sample values to store through the loop. This must also be done in the GUI
+        self.sample_q_x = []
+        self.sample_freq_y = []
+        self.sample_q_y = []
+        self.sample_freq_z = []
+        self.sample_q_z = []
+        self.s_average_freq_x = 0 # same here for all these as XSFreq etc.
+        self.s_average_q_x = 0
+        self.s_average_freq_y = 0
+        self.s_average_q_y = 0
+        self.s_average_freq_z = 0
+        self.s_average_q_z = 0
+
         self.root.update_idletasks()
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
@@ -1026,44 +1066,45 @@ class GUI(object):
             if msgbox == 'ok':
                 degrees = float(self.RLabelEntry.get())  # get value of degrees entered
                 num_rotations = int(degrees / 20)  # make the number of rotations calculated an integer for later for loop use
-                sample_freq_x, sample_q_x = [], [] # List of sample values to store through the loop
-                sample_freq_y, sample_q_y = [], []
-                sample_freq_z, sample_q_z = [], []
+
                 for i in range(num_rotations):
-                    self.rotation() # Rotates turntable by angle specified
+                    self.rotation()  # Rotates turntable by angle specified
                     self.ENA.ChamberState = 's'
                     self.x_axis()
                     self.progress['value'] = 6.66*4
-                    sample_freq_x.append(DRM.XSFreq)
-                    sample_q_x.append(DRM.XSQ)
-                    self.VSRLabelQEntry.insert(0, str(DRM.XSQ))
-                    self.VSRLabelEntry.insert(0, str(DRM.XSFreq))
+                    self.sample_freq_x.append(DRM.XSFreq) # Adds each measurement to the list
+                    self.sample_q_x.append(DRM.XSQ)
 
                     self.y_axis()
                     self.progress['value'] = 6.66 * 5
-                    sample_freq_y.append(DRM.XSFreq)
-                    sample_q_y.append(DRM.XSQ)
-                    self.HSRLabelEntry.insert(0, str(DRM.YSFreq))
-                    self.HSRLabelQEntry.insert(0, str(DRM.YSQ))
+                    self.sample_freq_y.append(DRM.YSFreq)
+                    self.sample_q_y.append(DRM.YSQ)
 
                     self.z_axis()
                     self.progress['value'] = 6.66 * 6
-                    sample_freq_z.append(DRM.XSFreq)
-                    sample_q_z.append(DRM.XSQ)
-                    self.ZSRLabelEntry.insert(0, str(DRM.ZSFreq))
-                    self.ZSRLabelQEntry.insert(0, str(DRM.ZSQ))
+                    self.sample_freq_z.append(DRM.ZSFreq)
+                    self.sample_q_z.append(DRM.ZSQ)
 
-                    s_average_freq_x = sum(sample_freq_x)/len(sample_freq_x)
-                    s_average_freq_y = sum(sample_freq_y)/len(sample_freq_y)
-                    s_average_freq_z = sum(sample_freq_z)/len(sample_freq_z)
-                    s_average_q_x = sum(sample_q_x)/len(sample_q_x)
-                    s_average_q_y = sum(sample_q_y)/len(sample_q_y)
-                    s_average_q_z = sum(sample_q_z)/len(sample_q_z)
+                # Once the for loop has finished
+                s_average_freq_x = sum(self.sample_freq_x)/len(self.sample_freq_x) # Averages each measurement
+                s_average_q_x = sum(self.sample_q_x) / len(self.sample_q_x)
+                s_average_freq_y = sum(self.sample_freq_y)/len(self.sample_freq_y)
+                s_average_q_y = sum(self.sample_q_y) / len(self.sample_q_y)
+                s_average_freq_z = sum(self.sample_freq_z)/len(self.sample_freq_z)
+                s_average_q_z = sum(self.sample_q_z)/len(self.sample_q_z)
+
+                self.VSRLabelEntry.insert(0, str(self.s_average_freq_x)) # Put the average values in the GUI
+                self.VSRLabelQEntry.insert(0, str(self.s_average_q_x))
+                self.HSRLabelEntry.insert(0, str(self.s_average_freq_y))
+                self.HSRLabelQEntry.insert(0, str(self.s_average_q_y))
+                self.ZSRLabelEntry.insert(0, str(self.s_average_freq_z))
+                self.ZSRLabelQEntry.insert(0, str(self.s_average_q_z))
 
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
                 break
             else:
+                # Deletes measurements
                 self.VSRLabelEntry.delete(0, 'end')
                 self.VSRLabelQEntry.delete(0, 'end')
                 self.HSRLabelEntry.delete(0, 'end')
