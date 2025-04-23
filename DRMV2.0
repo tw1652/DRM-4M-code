@@ -1009,7 +1009,7 @@ class GUI(object):
                     break # Ends the Loop
 
     def run(self):
-        #Comment all these out, not sure why they are needed when all the other variables that were there before are fine
+        #Not sure why they are needed when all the other variables that were there before are fine
         '''DRM.XSFreq = 0  # Put these here so XSFreq and XSQ are used in "run" so that it can find it, otherwise has a fit
         DRM.XSQ = 0
         DRM.XRFreq = 0
@@ -1020,12 +1020,15 @@ class GUI(object):
         self.sample_q_y = []
         self.sample_freq_z = []
         self.sample_q_z = []
-        self.s_average_freq_x = 0 # same here for all these as XSFreq etc.
+        self.s_average_freq_x = 0
         self.s_average_q_x = 0
         self.s_average_freq_y = 0
         self.s_average_q_y = 0
         self.s_average_freq_z = 0
         self.s_average_q_z = 0'''
+        replica_freq_x, replica_q_x = [], []  # List of replica values to store through the loop
+        replica_freq_y, replica_q_y = [], []
+        replica_freq_z, replica_q_z = [], []
 
         self.root.update_idletasks()
         while True:  # this loop allows for human error with handling the machine. applied to every section
@@ -1056,7 +1059,7 @@ class GUI(object):
                 self.HERLabelQEntry.delete(0, 'end')
                 self.ZERLabelEntry.delete(0, 'end')
                 self.ZERLabelQEntry.delete(0, 'end')
-                
+
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'PLACE ORIGINAL IN CAVITY')
             if msgbox == 'ok':
@@ -1090,13 +1093,13 @@ class GUI(object):
                 s_average_q_z = sum(self.sample_q_z)/len(self.sample_q_z)
 
                 # Put the average values in the GUI
-                self.VSRLabelEntry.insert(0, str(self.s_average_freq_x)) 
-                self.VSRLabelQEntry.insert(0, str(self.s_average_q_x))
-                self.HSRLabelEntry.insert(0, str(self.s_average_freq_y))
-                self.HSRLabelQEntry.insert(0, str(self.s_average_q_y))
-                self.ZSRLabelEntry.insert(0, str(self.s_average_freq_z))
-                self.ZSRLabelQEntry.insert(0, str(self.s_average_q_z))
-            
+                self.VSRLabelEntry.insert(0, str(DRM.s_average_freq_x))
+                self.VSRLabelQEntry.insert(0, str(DRM.s_average_q_x))
+                self.HSRLabelEntry.insert(0, str(DRM.s_average_freq_y))
+                self.HSRLabelQEntry.insert(0, str(DRM.s_average_q_y))
+                self.ZSRLabelEntry.insert(0, str(DRM.s_average_freq_z))
+                self.ZSRLabelQEntry.insert(0, str(DRM.s_average_q_z))
+
             print('\a')
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
@@ -1140,10 +1143,6 @@ class GUI(object):
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'PLACE REPLICA IN CAVITY')
             if msgbox == 'ok':
-                replica_freq_x, replica_q_x = [], []  # List of replica values to store through the loop
-                replica_freq_y, replica_q_y = [], []
-                replica_freq_z, replica_q_z = [], []
-                # NOT SURE IF WE NEED THESE LINES AGAIN HERE AFTER THE FIRST SAMPLE?
                 degrees = float(self.RLabelEntry.get())  # get value of degrees entered
                 num_rotations = int(degrees / 20)  # make the number of rotations calculated an integer for later for loop use
                 for i in range(num_rotations):
@@ -1151,31 +1150,38 @@ class GUI(object):
                     self.ENA.ChamberState = 'r'
                     self.x_axis()
                     self.progress['value'] = 6.66 * 10
-                    replica_freq_x.append(DRM.XRFreq)
-                    replica_q_x.append(DRM.XRQ)
-                    self.VRRLabelEntry.insert(0, str(DRM.XRFreq))
-                    self.VRRLabelQEntry.insert(0, str(DRM.XRQ))
+                    self.replica_freq_x.append(DRM.XRFreq)
+                    self.replica_q_x.append(DRM.XRQ)
+                    
 
                     self.y_axis()
                     self.progress['value'] = 6.66 * 11
-                    replica_freq_y.append(DRM.YRFreq)
-                    replica_q_y.append(DRM.YRQ)
-                    self.HRRLabelEntry.insert(0, str(DRM.YRFreq))
-                    self.HRRLabelQEntry.insert(0, str(DRM.YRQ))
+                    self.replica_freq_y.append(DRM.YRFreq)
+                    self.replica_q_y.append(DRM.YRQ)
+                    
 
                     self.z_axis()
                     self.progress['value'] = 6.66 * 12
-                    replica_freq_z.append(DRM.ZRFreq)
-                    replica_q_z.append(DRM.ZRQ)
-                    self.ZRRLabelEntry.insert(0, str(DRM.ZRFreq))
-                    self.ZRRLabelQEntry.insert(0, str(DRM.ZRQ))
+                    self.replica_freq_z.append(DRM.ZRFreq)
+                    self.replica_q_z.append(DRM.ZRQ)
+                    
 
-                    r_average_freq_x = sum(replica_freq_x) / len(replica_freq_x)
-                    r_average_freq_y = sum(replica_freq_y) / len(replica_freq_y)
-                    r_average_freq_z = sum(replica_freq_z) / len(replica_freq_z)
-                    r_average_q_x = sum(replica_q_x) / len(replica_q_x)
-                    r_average_q_y = sum(replica_q_y) / len(replica_q_y)
-                    r_average_q_z = sum(replica_q_z) / len(replica_q_z)
+                r_average_freq_x = sum(replica_freq_x) / len(replica_freq_x)
+                r_average_freq_y = sum(replica_freq_y) / len(replica_freq_y)
+                r_average_freq_z = sum(replica_freq_z) / len(replica_freq_z)
+                r_average_q_x = sum(replica_q_x) / len(replica_q_x)
+                r_average_q_y = sum(replica_q_y) / len(replica_q_y)
+                r_average_q_z = sum(replica_q_z) / len(replica_q_z)
+
+                # Put the average values in the GUI
+                self.VRRLabelEntry.insert(0, str(DRM.r_average_freq_x))
+                self.VRRLabelQEntry.insert(0, str(DRM.r_average_q_x))
+                self.HRRLabelEntry.insert(0, str(DRM.r_average_freq_y))
+                self.HRRLabelQEntry.insert(0, str(DRM.r_average_q_y))
+                self.ZRRLabelEntry.insert(0, str(DRM.r_average_freq_z))
+                self.ZRRLabelQEntry.insert(0, str(DRM.r_average_q_z))
+                
+                print('\a')
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
                 break
