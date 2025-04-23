@@ -19,14 +19,6 @@ num_runs = 1 # Number of measured runs
 class DRM(object):
 
     def __init__(self):
-
-        self.sample_freq_x = []
-        self.sample_q_x = []  # List of sample values to store through the loop
-        self.sample_freq_y = []
-        self.sample_q_y = []
-        self.sample_freq_z = []
-        self.sample_q_z = []
-
         self.ChamberState = [  # possible subject positions
             ('Empty', 'e'),
             ('Replica', 'r'),
@@ -48,6 +40,22 @@ class DRM(object):
         self.XSQ.set('0.00000')
         self.ZSFreq.set('0.00000')
         self.ZSQ.set('0.00000')
+
+        # List of sample values to store through the loop
+        # Do these need to be set to zero?
+        self.sample_freq_x = []
+        self.sample_q_x = []
+        self.sample_freq_y = []
+        self.sample_q_y = []
+        self.sample_freq_z = []
+        self.sample_q_z = []
+
+        self.s_average_freq_x.set('0.00000')
+        self.s_average_q_x.set('0.00000')
+        self.s_average_freq_y.set('0.00000')
+        self.s_average_q_y.set('0.00000')
+        self.s_average_freq_z.set('0.00000')
+        self.s_average_q_z.set('0.00000')
 
         self.e_star1.set('0.00000')
         self.e_star2.set('0.00000')
@@ -104,7 +112,6 @@ class DRM(object):
         self.vs2.set('0.00000')
 
         self.e_star2.set('0.0000')
-
 
     def calc(self):
         # volume of cavity
@@ -698,20 +705,6 @@ class GUI(object):
         self.root.wm_title("DRM Measurement Facility")
         self.root.mainloop()
 
-        self.sample_freq_x = [] # List of sample values to store through the loop. This must be done in DRM too
-        self.sample_q_x = []
-        self.sample_freq_y = []
-        self.sample_q_y = []
-        self.sample_freq_z = []
-        self.sample_q_z = []
-
-        self.s_average_freq_x = 0  # same here for all these as XSFreq and sample_freq_x etc.
-        self.s_average_q_x = 0
-        self.s_average_freq_y = 0
-        self.s_average_q_y = 0
-        self.s_average_freq_z = 0
-        self.s_average_q_z = 0
-
     def terminate(self):
         self.root.destroy()
         sys.exit()
@@ -795,14 +788,14 @@ class GUI(object):
         time.sleep(2)
         self.mode = 3 # Corresponds to mode 3, which is to rotate the sample
         self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8')) # sends over "self.mode" via serial
-        time.sleep(2)
+        time.sleep(2) # May be worth increasing or double checking as motor does not turn at the moment
         self.ENA.Arduino_Serial.write(str(degrees).encode('utf-8')) # Also need to pass over the values for the angles (0 to 180 degrees)
         time.sleep(5)
         self.ENA.Arduino_Serial.close()
 
 
     def x_axis(self):
-        self.ENA.Arduino_Serial.open() #Opens arduino serial port
+        self.ENA.Arduino_Serial.open() # Opens arduino serial port
         time.sleep(2)
         self.mode = 0
         self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))
@@ -1016,7 +1009,8 @@ class GUI(object):
                     break # Ends the Loop
 
     def run(self):
-        DRM.XSFreq = 0  # Put these here so XSFreq and XSQ are used in "run" so that it can find it, otherwise has a fit
+        #Comment all these out, not sure why they are needed when all the other variables that were there before are fine
+        '''DRM.XSFreq = 0  # Put these here so XSFreq and XSQ are used in "run" so that it can find it, otherwise has a fit
         DRM.XSQ = 0
         DRM.XRFreq = 0
         DRM.XRQ = 0
@@ -1031,7 +1025,7 @@ class GUI(object):
         self.s_average_freq_y = 0
         self.s_average_q_y = 0
         self.s_average_freq_z = 0
-        self.s_average_q_z = 0
+        self.s_average_q_z = 0'''
 
         self.root.update_idletasks()
         while True:  # this loop allows for human error with handling the machine. applied to every section
@@ -1050,6 +1044,7 @@ class GUI(object):
                 self.progress['value'] = 6.66*3
                 self.ZERLabelEntry.insert(0, str(DRM.ZEFreq))
                 self.ZERLabelQEntry.insert(0, str(DRM.ZEQ1))
+            print('\a')
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
                 break
@@ -1061,6 +1056,7 @@ class GUI(object):
                 self.HERLabelQEntry.delete(0, 'end')
                 self.ZERLabelEntry.delete(0, 'end')
                 self.ZERLabelQEntry.delete(0, 'end')
+                
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING',  'PLACE ORIGINAL IN CAVITY')
             if msgbox == 'ok':
@@ -1085,21 +1081,23 @@ class GUI(object):
                     self.sample_freq_z.append(DRM.ZSFreq)
                     self.sample_q_z.append(DRM.ZSQ)
 
-                # Once the for loop has finished
-                s_average_freq_x = sum(self.sample_freq_x)/len(self.sample_freq_x) # Averages each measurement
+                # Once the for loop has finished average each measurement. Should this be done outside in another function like calc?
+                s_average_freq_x = sum(self.sample_freq_x)/len(self.sample_freq_x)
                 s_average_q_x = sum(self.sample_q_x) / len(self.sample_q_x)
                 s_average_freq_y = sum(self.sample_freq_y)/len(self.sample_freq_y)
                 s_average_q_y = sum(self.sample_q_y) / len(self.sample_q_y)
                 s_average_freq_z = sum(self.sample_freq_z)/len(self.sample_freq_z)
                 s_average_q_z = sum(self.sample_q_z)/len(self.sample_q_z)
 
-                self.VSRLabelEntry.insert(0, str(self.s_average_freq_x)) # Put the average values in the GUI
+                # Put the average values in the GUI
+                self.VSRLabelEntry.insert(0, str(self.s_average_freq_x)) 
                 self.VSRLabelQEntry.insert(0, str(self.s_average_q_x))
                 self.HSRLabelEntry.insert(0, str(self.s_average_freq_y))
                 self.HSRLabelQEntry.insert(0, str(self.s_average_q_y))
                 self.ZSRLabelEntry.insert(0, str(self.s_average_freq_z))
                 self.ZSRLabelQEntry.insert(0, str(self.s_average_q_z))
-
+            
+            print('\a')
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
                 break
@@ -1127,6 +1125,7 @@ class GUI(object):
                 self.progress['value'] = 6.66 * 9
                 self.ZERLabelQ1Entry.insert(0, str(DRM.ZEQ2))
                 self.ZERLabel1Entry.insert(0, str(DRM.ZEFreq1))
+            print('\a')
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
                 break
