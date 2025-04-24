@@ -801,16 +801,16 @@ class GUI(object):
         self.ENA.r = float(self.RLabelEntry.get())
 
     def rotation(self):
+        # This is the function to rotate the sample, this can be called after x, y and z axes are measured.
         # RLabelTxt taken in the GUI
         degrees = float(self.RLabelEntry.get())  # get value of degrees entered
-        # This is the function to rotate the sample, this can be called after x, y and z axes are measured.
         self.ENA.Arduino_Serial.open()  # Opens arduino serial port
         time.sleep(2)
         self.mode = 3  # Corresponds to mode 3, which is to rotate the sample
         self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))  # sends over "self.mode" via serial
         time.sleep(2)  # May be worth increasing or double checking as motor does not turn at the moment
-        self.ENA.Arduino_Serial.write(
-            str(degrees).encode('utf-8'))  # Also need to pass over the values for the angles (0 to 180 degrees)
+        self.ENA.Arduino_Serial.write(str(degrees).encode('utf-8'))  # Also need to pass over the values for the angles (0 to 180 degrees)
+        print("Degrees sent to arduino")
         time.sleep(5)
         self.ENA.Arduino_Serial.close()
 
@@ -1038,7 +1038,7 @@ class GUI(object):
 
 
         self.root.update_idletasks()
-        '''while True:  # this loop allows for human error with handling the machine. applied to every section
+        while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
             if msgbox == 'ok':
                 self.ENA.ChamberState = 'e'
@@ -1065,7 +1065,7 @@ class GUI(object):
                 self.HERLabelEntry.delete(0, 'end')
                 self.HERLabelQEntry.delete(0, 'end')
                 self.ZERLabelEntry.delete(0, 'end')
-                self.ZERLabelQEntry.delete(0, 'end')'''
+                self.ZERLabelQEntry.delete(0, 'end')
 
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING', 'PLACE ORIGINAL IN CAVITY')
@@ -1158,25 +1158,25 @@ class GUI(object):
                     self.ENA.ChamberState = 'r'
                     self.x_axis()
                     self.progress['value'] = 6.66 * 10
-                    replica_freq_x.append(DRM.XRFreq)
-                    replica_q_x.append(DRM.XRQ)
+                    DRM.replica_freq_x.append(DRM.XRFreq)
+                    DRM.replica_q_x.append(DRM.XRQ)
 
                     self.y_axis()
                     self.progress['value'] = 6.66 * 11
-                    replica_freq_y.append(DRM.YRFreq)
-                    replica_q_y.append(DRM.YRQ)
+                    DRM.replica_freq_y.append(DRM.YRFreq)
+                    DRM.replica_q_y.append(DRM.YRQ)
 
                     self.z_axis()
                     self.progress['value'] = 6.66 * 12
-                    replica_freq_z.append(DRM.ZRFreq)
-                    replica_q_z.append(DRM.ZRQ)
+                    DRM.replica_freq_z.append(DRM.ZRFreq)
+                    DRM.replica_q_z.append(DRM.ZRQ)
 
-                    r_average_freq_x = sum(replica_freq_x) / len(replica_freq_x)
-                    r_average_freq_y = sum(replica_freq_y) / len(replica_freq_y)
-                    r_average_freq_z = sum(replica_freq_z) / len(replica_freq_z)
-                    r_average_q_x = sum(replica_q_x) / len(replica_q_x)
-                    r_average_q_y = sum(replica_q_y) / len(replica_q_y)
-                    r_average_q_z = sum(replica_q_z) / len(replica_q_z)
+                    r_average_freq_x = sum(DRM.replica_freq_x) / len(DRM.replica_freq_x)
+                    r_average_freq_y = sum(DRM.replica_freq_y) / len(DRM.replica_freq_y)
+                    r_average_freq_z = sum(DRM.replica_freq_z) / len(DRM.replica_freq_z)
+                    r_average_q_x = sum(DRM.replica_q_x) / len(DRM.replica_q_x)
+                    r_average_q_y = sum(DRM.replica_q_y) / len(DRM.replica_q_y)
+                    r_average_q_z = sum(DRM.replica_q_z) / len(DRM.replica_q_z)
 
                     self.VRRLabelEntry.insert(0, str(DRM.r_average_freq_x))
                     self.VRRLabelQEntry.insert(0, str(DRM.r_average_q_x))
@@ -1307,7 +1307,10 @@ class GUI(object):
         fh.write("Q EMPTY Y1: %s\n" % DRM.YEQ1)
         fh.write("FREQ EMPTY Z1: %s\n" % DRM.ZEFreq)
         fh.write("Q EMPTY Z1: %s\n" % DRM.ZEQ1)
+        fh.write("INDIVIDUAL SAMPLE X FREQS: %s\n" % DRM.sample_freq_x)
         fh.write("FREQ SAMPLE X AVG: %s\n" % DRM.s_average_freq_x)
+        fh.write("FREQ SAMPLE Y AVG: %s\n" % DRM.s_average_freq_y)
+        fh.write("FREQ SAMPLE Z AVG: %s\n" % DRM.s_average_freq_y)
         fh.write("Q SAMPLE X AVG: %s\n" % DRM.s_average_q_x)
         fh.write("FREQ SAMPLE Y AVG: %s\n" % DRM.s_average_freq_y)
         fh.write("Q SAMPLE Y AVG: %s\n" % DRM.s_average_q_y)
@@ -1319,6 +1322,9 @@ class GUI(object):
         fh.write("Q EMPTY Y2: %s\n" % DRM.YEQ2)
         fh.write("FREQ EMPTY Z2: %s\n" % DRM.ZEFreq1)
         fh.write("Q EMPTY Z2: %s\n" % DRM.ZEQ2)
+        fh.write("INDIVIDUAL REPLICA X FREQS: %s\n" % DRM.replica_freq_x)
+        fh.write("INDIVIDUAL REPLICA Y FREQS: %s\n" % DRM.replica_freq_y)
+        fh.write("INDIVIDUAL REPLICA Z FREQS: %s\n" % DRM.replica_freq_z)
         fh.write("FREQ REPLICA X AVG: %s\n" % DRM.r_average_freq_x)
         fh.write("Q REPLICA X AVG: %s\n" % DRM.r_average_q_x)
         fh.write("FREQ REPLICA Y AVG: %s\n" % DRM.r_average_freq_y)
