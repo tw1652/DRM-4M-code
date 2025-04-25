@@ -806,9 +806,9 @@ class GUI(object):
         degrees = float(self.RLabelEntry.get())  # get value of degrees entered
         self.ENA.Arduino_Serial.open()  # Opens arduino serial port
         time.sleep(2)
-        self.mode = 3  # Corresponds to mode 3, which is to rotate the sample
+        self.mode = 4  # Corresponds to mode 4, which is to rotate the sample
         self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))  # sends over "self.mode" via serial
-        time.sleep(2)  # May be worth increasing or double checking as motor does not turn at the moment
+        time.sleep(2)  # May be worth increasing or double-checking as motor does not turn at the moment
         self.ENA.Arduino_Serial.write(str(degrees).encode('utf-8'))  # Also need to pass over the values for the angles (0 to 180 degrees)
         print("Degrees sent to arduino")
         time.sleep(5)
