@@ -1,0 +1,33 @@
+    def TempRead(self):
+        while True:  ## Loop continues until one of the predetermined ends is reached
+            try:  # Attempt to read the temperature
+                self.ENA.Arduino_Serial.open()
+                self.mode = 3  # Sending Mode 3 to the Arduino sets it to DHT mode
+                time.sleep(3)
+                self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))
+                temp_data = self.ENA.Arduino_Serial.readline().decode('utf-8').strip()  # deg. C
+                temp_data = re.sub("[^0-9.]", "",
+                                   temp_data)  # These two lines sanatise the output and remove any extra characters
+                self.ENA.Arduino_Serial.close()
+                temp_float = float(temp_data)
+                temp_rounded = round(temp_float, 1)
+                self.ENA.temperature = str(temp_rounded)
+                print(temp_rounded)
+                if self.ENA.temperature == 0.0 or self.ENA.temperature == nan or self.ENA.temperature == '':
+                    int("t")
+                else:
+                    self.ENA.temperature = temp_rounded
+                    break  # Ends the Loop
+            except:  # If failed, set reading to Not Read
+                msgbox = messagebox.askyesno('Temperature read failed',
+                                             'Do you want to try and read again?')  # Prompts the user if they want to try again
+                if msgbox == False:
+                    self.manual = simpledialog.askstring("Manual input",
+                                                         "Please enter temperature manually")  # Prompts the user to enter the temperature manually
+                    if self.manual == None or self.manual == "":
+                        self.ENA.temperature = ("Not Read")
+                    else:
+                        self.ENA.temperature = (self.manual)
+                    self.ENA.humidity = (
+                        "Not Read")  # automatically assigns humidity as not read due to less likely to have a humidity sensor to hand
+                    break  # Ends the Loop
