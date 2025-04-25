@@ -12,7 +12,6 @@
 float readingX;
 float readingY;
 float readingZ;
-float humidity = -1;
 float temperature = -300;
 int value = 5; // Not a value used in the loop so good 
 // Define the number of steps per revolution (360° / 18° per step), as per datasheet
@@ -49,7 +48,7 @@ void loop()
     Temp();
   }
   else if(value == 4){
-    // Delay a bit longer than the Python to allow the value to be passed through
+    // Maybe add corresponding delay here to the python, or a bit longer here than the python to allow the value to be passed through.
     delay(2500);
     rotation(value, 1); // Takes rotation value from the serial port
   }
@@ -148,14 +147,11 @@ void Z_axis(){
   digitalWrite (6, LOW);
 }
 void Temp(){
-  humidity = dht.readHumidity();
   temperature = dht.readTemperature();
-  if (isnan(humidity) || isnan(temperature)) {
+  if (isnan(temperature)) {
     Serial.println("Failed to read from DHT sensor");
   } else {
-  Serial.print(humidity);
-  Serial.println(" %");
-  Serial.print(temperature);
-  Serial.println(" °C");
+    Serial.print(temperature);
+    Serial.println(" °C");
   }
 }
