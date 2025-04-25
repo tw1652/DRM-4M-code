@@ -56,7 +56,7 @@ void loop()
 }
 
 void rotation(int angleInput, int direction){
-  stepsPerRevolution = angleInput/20;
+  stepsPerRevolution = (angleInput + 9)/18; // Integer rounding
 
   if (direction == 1) { // clockwise
    for (int i = 0; i < stepsPerRevolution; i++) { 
@@ -123,10 +123,14 @@ void rotation(int angleInput, int direction){
     delay(5);
     
     }
-  
   }
-
+    else {
+      Serial.println("Invalid direction");
+      return;
+    }
 }
+
+
 
 void X_axis() {
   digitalWrite (2, LOW);
@@ -146,9 +150,12 @@ void Z_axis(){
 void Temp(){
   humidity = dht.readHumidity();
   temperature = dht.readTemperature();
+  if (isnan(humidity) || isnan(temperature)) {
+    Serial.println("Failed to read from DHT sensor");
+  } else {
   Serial.print(humidity);
   Serial.println(" %");
   Serial.print(temperature);
   Serial.println(" °C");
-
+  }
 }
