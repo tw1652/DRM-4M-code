@@ -75,11 +75,11 @@ class DRM(object):
         self.vs2.set('0.00000')
 
         # Empty chamber frequency 2
-        self.YEFreq2.set('0.00000')
-        self.XEFreq2.set('0.00000')
+        self.YEFreq1.set('0.00000')
+        self.XEFreq1.set('0.00000')
         self.YEQ2.set('0.00000')
         self.XEQ2.set('0.00000')
-        self.ZEFreq2.set('0.00000')
+        self.ZEFreq1.set('0.00000')
         self.ZEQ2.set('0.00000')
 
         # Loaded chamber REPLICA sample
@@ -91,9 +91,9 @@ class DRM(object):
         self.XRQ.set('0.00000')
 
         # Empty chamber frequency 3
-        self.YEFreq3.set('0.00000')
-        self.XEFreq3.set('0.00000')
-        self.ZEFreq3.set('0.00000')
+        self.YEFreq2.set('0.00000')
+        self.XEFreq2.set('0.00000')
+        self.ZEFreq2.set('0.00000')
         self.YEQ3.set('0.00000')
         self.XEQ3.set('0.00000')
         self.ZEQ3.set('0.00000')
@@ -722,7 +722,7 @@ class GUI(object):
         self.progress['value'] = 0
         self.retrieve_parameters()
 
-        self.root.wm_title("DRM Measurement Facility")
+        self.root.wm_title("Tom DRM Measurement Facility")
         self.root.mainloop()
 
     def terminate(self):
@@ -805,14 +805,14 @@ class GUI(object):
         # RLabelTxt taken in the GUI
         degrees = float(self.RLabelEntry.get())  # get value of degrees entered
         self.ENA.Arduino_Serial.open()  # Opens arduino serial port
-        time.sleep(2)
+        time.sleep(2)  # Sleeps for 2 seconds
         self.mode = 4  # Corresponds to mode 4, which is to rotate the sample
         self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))  # sends over "self.mode" via serial
-        time.sleep(2)  # May be worth increasing or double-checking as motor does not turn at the moment
+        time.sleep(2)  # May be worth decreasing or double-checking as motor does not turn at the moment
         self.ENA.Arduino_Serial.write(str(degrees).encode('utf-8'))  # Also need to pass over the values for the angles (0 to 180 degrees)
-        print("Degrees sent to arduino")
         time.sleep(5)
         self.ENA.Arduino_Serial.close()
+        time.sleep(2)
 
     def x_axis(self):
         self.ENA.Arduino_Serial.open()  # Opens arduino serial port
@@ -1034,9 +1034,6 @@ class GUI(object):
                     break  # Ends the Loop
 
     def run(self):
-        # Comment all these out, not sure why they are needed when all the other variables that were there before are fine
-
-
         self.root.update_idletasks()
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
@@ -1133,8 +1130,9 @@ class GUI(object):
                 self.HERLabelQ1Entry.insert(0, str(DRM.YEQ2))
                 self.z_axis()
                 self.progress['value'] = 6.66 * 9
-                self.ZERLabelQ1Entry.insert(0, str(DRM.ZEQ2))
                 self.ZERLabel1Entry.insert(0, str(DRM.ZEFreq1))
+                self.ZERLabelQ1Entry.insert(0, str(DRM.ZEQ2))
+
             print('\a')
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
