@@ -49,8 +49,8 @@ void loop()
     Temp();
   }
   else if(value == 4){
-    // Maybe add corresponding delay here to the python, or a bit longer here than the python to allow the value to be passed through.
-    delay(100);
+    // Delay a bit longer than the Python to allow the value to be passed through
+    delay(2500);
     rotation(value, 1); // Takes rotation value from the serial port
   }
 }
