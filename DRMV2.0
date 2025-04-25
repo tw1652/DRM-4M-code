@@ -117,7 +117,6 @@ class DRM(object):
         self.tand.set('0.00000')
 
         self.temperature.set('0.00000')
-        self.humidity.set('0.00000')
 
         self.vs1 = '0.00000'
         self.vs1.set('0.00000')
@@ -804,9 +803,9 @@ class GUI(object):
     def rotation(self):
         # This is the function to rotate the sample, this can be called after x, y and z axes are measured.
         # RLabelTxt taken in the GUI
-        degrees = float(self.RLabelEntry.get())  # get value of degrees entered
         self.ENA.Arduino_Serial.open()  # Opens arduino serial port
         time.sleep(2)  # Sleeps for 2 seconds
+        degrees = float(self.RLabelEntry.get())  # get value of degrees entered
         self.mode = 4  # Corresponds to mode 4, which is to rotate the sample
         self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))  # sends over "self.mode" via serial
         time.sleep(2)  # May be worth decreasing or double-checking as motor does not turn at the moment
@@ -1018,10 +1017,9 @@ class GUI(object):
                 temp_data = re.sub("[^0-9.]", "",
                                    temp_data)  # These two lines sanitize the output and remove any extra characters
                 self.ENA.Arduino_Serial.close()
+                print("temp data from DHT22: ")
+                print(temp_data)
                 self.ENA.temperature = temp_data[-5:]
-                self.ENA.humidity = temp_data[:5]
-                if self.ENA.temperature == self.ENA.humidity:
-                    int("t")
                 break  # Ends the Loop
             except:  # If failed, set reading to Not Read
                 msgbox = messagebox.askyesno('Temperature read failed',
@@ -1033,8 +1031,7 @@ class GUI(object):
                         self.ENA.temperature = ("Not Read")
                     else:
                         self.ENA.temperature = (self.manual)
-                    self.ENA.humidity = (
-                        "Not Read")  # automatically assigns humidity as not read due to less likely to have a humidity sensor to hand
+                        
                     break  # Ends the Loop
 
     def run(self):
@@ -1094,12 +1091,7 @@ class GUI(object):
                     DRM.sample_q_z.append(DRM.ZSQ)
 
                 # Once the for loop has finished average each measurement.
-                # Should this be done outside in another function like calc?
-                print("Y list value")
-                print(sum(DRM.sample_freq_y))
-                print(num_rotations)
                 s_average_freq_x = sum(DRM.sample_freq_x) / num_rotations
-                print(s_average_freq_x)
                 s_average_q_x = sum(DRM.sample_q_x) / num_rotations
                 s_average_freq_y = sum(DRM.sample_freq_y) / num_rotations
                 s_average_q_y = sum(DRM.sample_q_y) / num_rotations
@@ -1186,12 +1178,12 @@ class GUI(object):
                     r_average_q_y = sum(DRM.replica_q_y) / len(DRM.replica_q_y)
                     r_average_q_z = sum(DRM.replica_q_z) / len(DRM.replica_q_z)
 
-                    self.VRRLabelEntry.insert(0, str(DRM.r_average_freq_x))
-                    self.VRRLabelQEntry.insert(0, str(DRM.r_average_q_x))
-                    self.HRRLabelEntry.insert(0, str(DRM.r_average_freq_y))
-                    self.HRRLabelQEntry.insert(0, str(DRM.r_average_q_y))
-                    self.ZRRLabelEntry.insert(0, str(DRM.r_average_freq_z))
-                    self.ZRRLabelQEntry.insert(0, str(DRM.r_average_q_z))
+                    self.VRRLabelEntry.insert(0, str(r_average_freq_x))
+                    self.VRRLabelQEntry.insert(0, str(r_average_q_x))
+                    self.HRRLabelEntry.insert(0, str(r_average_freq_y))
+                    self.HRRLabelQEntry.insert(0, str(r_average_q_y))
+                    self.ZRRLabelEntry.insert(0, str(r_average_freq_z))
+                    self.ZRRLabelQEntry.insert(0, str(r_average_q_z))
 
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
@@ -1301,10 +1293,8 @@ class GUI(object):
         fh.write("%s\n" % datetime.datetime.now())
         try:
             fh.write("Temperature: %s °C\n" % self.ENA.temperature)
-            fh.write("Humidity: %s" % self.ENA.humidity)
         except:
             fh.write("Temperature: Not Read\n")
-            fh.write("Humidity: Not Read")
         fh.write("%\n")
         fh.write("SAMPLE VOLUME: %s\n" % self.ENA.vs1)
         fh.write("REPLICA VOLUME: %s\n" % self.ENA.vs2)
