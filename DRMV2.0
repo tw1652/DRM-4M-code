@@ -12,16 +12,17 @@ import time
 import os
 import re
 
+import numpy as np
+
 num_runs = 1  # Number of measured runs
 
 
 # test comment so MPR can see it has been updated - and again - and one more
 
 class DRM(object):
-
     XSFreq = 0  # Put these here so XSFreq and XSQ are used in "run" so that it can find it, otherwise has a fit
     XSQ = 0
-    sample_freq_x = []     # List of sample values to store through the loop
+    sample_freq_x = []  # List of sample values to store through the loop
     sample_q_x = []
     sample_freq_y = []
     sample_q_y = []
@@ -216,35 +217,35 @@ class DRM(object):
 
             # weights for f0 and Q0 measured before and after sample 1
             w_x1_before = (self.MeasurementTime[6] - self.MeasurementTime[3]) / (
-                        self.MeasurementTime[6] - self.MeasurementTime[0])
+                    self.MeasurementTime[6] - self.MeasurementTime[0])
             w_x1_after = (self.MeasurementTime[3] - self.MeasurementTime[0]) / (
-                        self.MeasurementTime[6] - self.MeasurementTime[0])
+                    self.MeasurementTime[6] - self.MeasurementTime[0])
 
             w_y1_before = (self.MeasurementTime[7] - self.MeasurementTime[4]) / (
-                        self.MeasurementTime[7] - self.MeasurementTime[1])
+                    self.MeasurementTime[7] - self.MeasurementTime[1])
             w_y1_after = (self.MeasurementTime[4] - self.MeasurementTime[1]) / (
-                        self.MeasurementTime[7] - self.MeasurementTime[1])
+                    self.MeasurementTime[7] - self.MeasurementTime[1])
 
             w_z1_before = (self.MeasurementTime[8] - self.MeasurementTime[5]) / (
-                        self.MeasurementTime[8] - self.MeasurementTime[2])
+                    self.MeasurementTime[8] - self.MeasurementTime[2])
             w_z1_after = (self.MeasurementTime[5] - self.MeasurementTime[2]) / (
-                        self.MeasurementTime[8] - self.MeasurementTime[2])
+                    self.MeasurementTime[8] - self.MeasurementTime[2])
 
             # weights for f0 and Q0 measured before and after sample 2
             w_x2_before = (self.MeasurementTime[12] - self.MeasurementTime[9]) / (
-                        self.MeasurementTime[12] - self.MeasurementTime[6])
+                    self.MeasurementTime[12] - self.MeasurementTime[6])
             w_x2_after = (self.MeasurementTime[9] - self.MeasurementTime[6]) / (
-                        self.MeasurementTime[12] - self.MeasurementTime[6])
+                    self.MeasurementTime[12] - self.MeasurementTime[6])
 
             w_y2_before = (self.MeasurementTime[13] - self.MeasurementTime[10]) / (
-                        self.MeasurementTime[13] - self.MeasurementTime[7])
+                    self.MeasurementTime[13] - self.MeasurementTime[7])
             w_y2_after = (self.MeasurementTime[10] - self.MeasurementTime[7]) / (
-                        self.MeasurementTime[13] - self.MeasurementTime[7])
+                    self.MeasurementTime[13] - self.MeasurementTime[7])
 
             w_z2_before = (self.MeasurementTime[14] - self.MeasurementTime[11]) / (
-                        self.MeasurementTime[14] - self.MeasurementTime[8])
+                    self.MeasurementTime[14] - self.MeasurementTime[8])
             w_z2_after = (self.MeasurementTime[11] - self.MeasurementTime[8]) / (
-                        self.MeasurementTime[14] - self.MeasurementTime[8])
+                    self.MeasurementTime[14] - self.MeasurementTime[8])
 
             # EMPTY 1 WEIGHTED AVERAGE
 
@@ -314,7 +315,7 @@ class DRM(object):
             # Clausius-Mosotti factor for material 1 (original)
 
             self.alpha1 = self.alpha2 * np.polyval(p, vc / (self.vs1 * self.sig_r_omega1)) / np.polyval(p, vc / (
-                        self.vs2 * self.sig_r_omega2))
+                    self.vs2 * self.sig_r_omega2))
 
             # permittivity of material 1 (SPECIMEN)
             self.e_star1 = (1 + (2 * self.alpha1)) / (1 - self.alpha1)
@@ -809,7 +810,10 @@ class GUI(object):
         self.mode = 4  # Corresponds to mode 4, which is to rotate the sample
         self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))  # sends over "self.mode" via serial
         time.sleep(2)  # May be worth decreasing or double-checking as motor does not turn at the moment
-        self.ENA.Arduino_Serial.write(str(degrees).encode('utf-8'))  # Also need to pass over the values for the angles (0 to 180 degrees)
+        # Also need to pass over the values for the angles (0 to 180 degrees) as below:
+        self.ENA.Arduino_Serial.write(bytes(str(degrees), 'utf-8'))
+        print("Degrees rotated: ")
+        print(degrees)
         time.sleep(5)
         self.ENA.Arduino_Serial.close()
         time.sleep(2)
@@ -1068,7 +1072,8 @@ class GUI(object):
             msgbox = messagebox.showwarning('WARNING', 'PLACE ORIGINAL IN CAVITY')
             if msgbox == 'ok':
                 degrees = float(self.RLabelEntry.get())  # get value of degrees entered
-                num_rotations = int(degrees / 20)  # make the number of rotations calculated an integer for later for loop use
+                num_rotations = int(
+                    degrees / 20)  # make the number of rotations calculated an integer for later for loop use
 
                 for i in range(num_rotations):
                     self.rotation()  # Rotates turntable by angle specified
@@ -1077,38 +1082,37 @@ class GUI(object):
                     self.progress['value'] = 6.66 * 4
                     DRM.sample_freq_x.append(DRM.XSFreq)  # Adds each measurement to the list
                     DRM.sample_q_x.append(DRM.XSQ)
-                    print("X freq for this pass")
-                    print(DRM.sample_freq_x)
 
                     self.y_axis()
                     self.progress['value'] = 6.66 * 5
                     DRM.sample_freq_y.append(DRM.YSFreq)
                     DRM.sample_q_y.append(DRM.YSQ)
-                    print("Y freq for this pass")
-                    print(DRM.sample_freq_y)
 
                     self.z_axis()
                     self.progress['value'] = 6.66 * 6
                     DRM.sample_freq_z.append(DRM.ZSFreq)
                     DRM.sample_q_z.append(DRM.ZSQ)
-                    print("Z freq for this pass")
-                    print(DRM.sample_freq_z)
-                    
-                # Once the for loop has finished average each measurement. Should this be done outside in another function like calc?
-                s_average_freq_x = sum(DRM.sample_freq_x) / len(DRM.sample_freq_x)
-                s_average_q_x = sum(DRM.sample_q_x) / len(DRM.sample_q_x)
-                s_average_freq_y = sum(DRM.sample_freq_y) / len(DRM.sample_freq_y)
-                s_average_q_y = sum(DRM.sample_q_y) / len(DRM.sample_q_y)
-                s_average_freq_z = sum(DRM.sample_freq_z) / len(DRM.sample_freq_z)
-                s_average_q_z = sum(DRM.sample_q_z) / len(DRM.sample_q_z)
+
+                # Once the for loop has finished average each measurement.
+                # Should this be done outside in another function like calc?
+                print("Y list value")
+                print(sum(DRM.sample_freq_y))
+                print(num_rotations)
+                s_average_freq_x = sum(DRM.sample_freq_x) / num_rotations
+                print(s_average_freq_x)
+                s_average_q_x = sum(DRM.sample_q_x) / num_rotations
+                s_average_freq_y = sum(DRM.sample_freq_y) / num_rotations
+                s_average_q_y = sum(DRM.sample_q_y) / num_rotations
+                s_average_freq_z = sum(DRM.sample_freq_z) / num_rotations
+                s_average_q_z = sum(DRM.sample_q_z) / num_rotations
 
                 # Put the average values in the GUI
-                self.VSRLabelEntry.insert(0, str(DRM.s_average_freq_x))
-                self.VSRLabelQEntry.insert(0, str(DRM.s_average_q_x))
-                self.HSRLabelEntry.insert(0, str(DRM.s_average_freq_y))
-                self.HSRLabelQEntry.insert(0, str(DRM.s_average_q_y))
-                self.ZSRLabelEntry.insert(0, str(DRM.s_average_freq_z))
-                self.ZSRLabelQEntry.insert(0, str(DRM.s_average_q_z))
+                self.VSRLabelEntry.insert(0, str(s_average_freq_x))
+                self.VSRLabelQEntry.insert(0, str(s_average_q_x))
+                self.HSRLabelEntry.insert(0, str(s_average_freq_y))
+                self.HSRLabelQEntry.insert(0, str(s_average_q_y))
+                self.ZSRLabelEntry.insert(0, str(s_average_freq_z))
+                self.ZSRLabelQEntry.insert(0, str(s_average_q_z))
 
             print('\a')
             msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
