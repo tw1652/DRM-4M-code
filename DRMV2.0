@@ -12,7 +12,6 @@ import time
 import os
 import re
 
-import numpy as np
 
 num_runs = 1  # Number of measured runs
 
@@ -22,6 +21,7 @@ num_runs = 1  # Number of measured runs
 class DRM(object):
     XSFreq = 0  # Put these here so XSFreq and XSQ are used in "run" so that it can find it, otherwise has a fit
     XSQ = 0
+    YSFreq = 0
     sample_freq_x = []  # List of sample values to store through the loop
     sample_q_x = []
     sample_freq_y = []
@@ -46,6 +46,12 @@ class DRM(object):
     r_average_q_y = 0
     r_average_freq_z = 0
     r_average_q_z = 0
+
+    XEFreq1 = 0
+    XEQ2 = 0
+
+    XEFreq2 = 0
+    XEQ3 = 0
 
     def __init__(self):
         self.ChamberState = [  # possible subject positions
@@ -838,7 +844,7 @@ class GUI(object):
             self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
             self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
             self.BWID = round(self.results[0],
-                              -3) * 1.10  # This 1.10 decides the bandwidth when zooming in, can be increased if struggling to find bandwidth
+                              -3) * 1.15  # This 1.15 decides the bandwidth when zooming in, can be increased if struggling to find bandwidth
             self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
             self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
             self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
@@ -848,7 +854,7 @@ class GUI(object):
             self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
             self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
             self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-            self.BWID = round(self.results[0], -3) * 1.10
+            self.BWID = round(self.results[0], -3) * 1.15
             self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
             self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
             print("x")
@@ -903,7 +909,7 @@ class GUI(object):
         self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
         self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
         self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-        self.BWID = round(self.results[0], -3) * 1.10
+        self.BWID = round(self.results[0], -3) * 1.15
         self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
         self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
         print("y")
@@ -960,7 +966,7 @@ class GUI(object):
         self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
         self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
         self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-        self.BWID = round(self.results[0], -3) * 1.10
+        self.BWID = round(self.results[0], -3) * 5
         self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
         self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
         print("z")
@@ -1031,7 +1037,7 @@ class GUI(object):
                         self.ENA.temperature = ("Not Read")
                     else:
                         self.ENA.temperature = (self.manual)
-                        
+
                     break  # Ends the Loop
 
     def run(self):
@@ -1150,9 +1156,6 @@ class GUI(object):
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING', 'PLACE REPLICA IN CAVITY')
             if msgbox == 'ok':
-                degrees = float(self.RLabelEntry.get())  # get value of degrees entered
-                num_rotations = int(
-                    degrees / 20)  # make the number of rotations calculated an integer for later for loop use
                 for i in range(num_rotations):
                     self.rotation()
                     self.ENA.ChamberState = 'r'
@@ -1171,12 +1174,12 @@ class GUI(object):
                     DRM.replica_freq_z.append(DRM.ZRFreq)
                     DRM.replica_q_z.append(DRM.ZRQ)
 
-                    r_average_freq_x = sum(DRM.replica_freq_x) / len(DRM.replica_freq_x)
-                    r_average_freq_y = sum(DRM.replica_freq_y) / len(DRM.replica_freq_y)
-                    r_average_freq_z = sum(DRM.replica_freq_z) / len(DRM.replica_freq_z)
-                    r_average_q_x = sum(DRM.replica_q_x) / len(DRM.replica_q_x)
-                    r_average_q_y = sum(DRM.replica_q_y) / len(DRM.replica_q_y)
-                    r_average_q_z = sum(DRM.replica_q_z) / len(DRM.replica_q_z)
+                    r_average_freq_x = sum(DRM.replica_freq_x) / num_rotations
+                    r_average_freq_y = sum(DRM.replica_freq_y) / num_rotations
+                    r_average_freq_z = sum(DRM.replica_freq_z) / num_rotations
+                    r_average_q_x = sum(DRM.replica_q_x) / num_rotations
+                    r_average_q_y = sum(DRM.replica_q_y) / num_rotations
+                    r_average_q_z = sum(DRM.replica_q_z) / num_rotations
 
                     self.VRRLabelEntry.insert(0, str(r_average_freq_x))
                     self.VRRLabelQEntry.insert(0, str(r_average_q_x))
