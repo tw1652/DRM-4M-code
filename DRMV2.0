@@ -1077,17 +1077,23 @@ class GUI(object):
                     self.progress['value'] = 6.66 * 4
                     DRM.sample_freq_x.append(DRM.XSFreq)  # Adds each measurement to the list
                     DRM.sample_q_x.append(DRM.XSQ)
+                    print("X freq for this pass")
+                    print(DRM.sample_freq_x)
 
                     self.y_axis()
                     self.progress['value'] = 6.66 * 5
                     DRM.sample_freq_y.append(DRM.YSFreq)
                     DRM.sample_q_y.append(DRM.YSQ)
+                    print("Y freq for this pass")
+                    print(DRM.sample_freq_y)
 
                     self.z_axis()
                     self.progress['value'] = 6.66 * 6
                     DRM.sample_freq_z.append(DRM.ZSFreq)
                     DRM.sample_q_z.append(DRM.ZSQ)
-
+                    print("Z freq for this pass")
+                    print(DRM.sample_freq_z)
+                    
                 # Once the for loop has finished average each measurement. Should this be done outside in another function like calc?
                 s_average_freq_x = sum(DRM.sample_freq_x) / len(DRM.sample_freq_x)
                 s_average_q_x = sum(DRM.sample_q_x) / len(DRM.sample_q_x)
