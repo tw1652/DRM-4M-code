@@ -54,7 +54,17 @@ class DRM(object):
 
     YEFreq1 = 0
     XEFreq1 = 0
+    XEQ2 = 0
+    YEQ2 = 0
+    ZEFreq1 = 0
+    ZEQ2 = 0
 
+    XEFreq2 = 0
+    XEQ3 = 0
+    YEFreq2 = 0
+    YEQ3 = 0
+    ZEFreq2 = 0
+    ZEQ3 = 0
 
     def __init__(self):
         self.ChamberState = [  # possible subject positions
@@ -69,7 +79,7 @@ class DRM(object):
         self.YEQ1.set('0.00000')
         self.XEQ1.set('0.00000')
         self.ZEFreq.set('0.00000')
-        self.ZEQ1.set('0.00000')#
+        self.ZEQ1.set('0.00000')  #
 
         # Loaded chamber SPECIMEN sample
         self.YSFreq.set('0.00000')
@@ -77,7 +87,7 @@ class DRM(object):
         self.YSQ.set('0.00000')
         self.XSQ.set('0.00000')
         self.ZSFreq.set('0.00000')
-        self.ZSQ.set('0.00000')#
+        self.ZSQ.set('0.00000')  #
 
         self.e_star1.set('0.00000')
         self.e_star2.set('0.00000')
@@ -816,26 +826,23 @@ class GUI(object):
         time.sleep(2)  # Sleeps for 2 seconds
         degrees = float(self.RLabelEntry.get())  # get value of degrees entered
         self.mode = 4  # Corresponds to mode 4, which is to rotate the sample
-        self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))  # sends over "self.mode" via serial
-        time.sleep(2)  # May be worth decreasing or double-checking as motor does not turn at the moment
-        # Also need to pass over the values for the angles (0 to 180 degrees) as below:
-        self.ENA.Arduino_Serial.write(bytes(str(degrees), 'utf-8'))
+        message = f"{self.mode} {int(degrees)}\n"  # Format is self.mode, degrees
+        self.ENA.Arduino_Serial.write(message.encode('utf-8'))  # sends over "self.mode" via serial
+        print("Sent:", message)
         print("Degrees rotated: ")
         print(degrees)
         time.sleep(5)
         self.ENA.Arduino_Serial.close()
-        time.sleep(2)
 
     def x_axis(self):
-        self.ENA.Arduino_Serial.open()  # Opens arduino serial port
+        self.ENA.Arduino_Serial.open()
         time.sleep(2)
         self.mode = 0
         self.ENA.Arduino_Serial.write(bytes(str(self.mode), 'utf-8'))
         time.sleep(5)
         self.ENA.Arduino_Serial.close()
         if self.ENA.MeasurementNum == 0:
-            self.ENA.write(':SOURce:POWer:LEVel:IMMediate:AMPLitude %G' % (
-                5.0))  ## 10 too high, as performance at this level is not specified. 7.0 is the max without this error
+            self.ENA.write(':SOURce:POWer:LEVel:IMMediate:AMPLitude %G' % (5.0))  ## 10 too high, as performance at this level is not specified. 7.0 is the max without this error
             self.ENA.write('CONF "FILT:TRAN"; *WAI')
             self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
             self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
@@ -846,57 +853,56 @@ class GUI(object):
             self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
             self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
             self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-            self.BWID = round(self.results[0],
-                              -3) * 1.10  # This 1.10 decides the bandwidth when zooming in, can be increased if struggling to find bandwidth
+            self.BWID = round(self.results[0], -3) * 1.20
             self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
             self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
-            self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
-            self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
-            self.ENA.write(':SENS:FREQ:STOP 1500 MHz;*WAI')
-            time.sleep(10)
-            self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
-            self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
-            self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-            self.BWID = round(self.results[0], -3) * 1.10
-            self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
-            self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
-            print("x")
-            print(self.results)
-            time.sleep(5)
-            if self.ENA.ChamberState == 'e':
+        self.ENA.write('DISP:ANN:FREQ:MODE SSTOP')
+        self.ENA.write(':SENS:FREQ:STAR 1300 MHz;*WAI')
+        self.ENA.write(':SENS:FREQ:STOP 1500 MHz;*WAI')
+        time.sleep(10)
+        self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
+        self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
+        self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
+        self.BWID = round(self.results[0], -3) * 1.20
+        self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
+        self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
+        print("x")
+        print(self.results)
+        time.sleep(5)
+        if self.ENA.ChamberState == 'e':
 
-                # Empty 1
-                if self.ENA.MeasurementNum == 0:
-                    peak_dataX = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-                    DRM.XEFreq = peak_dataX[1] / 1000000
-                    DRM.XEQ1 = peak_dataX[2]
-                    self.ENA.MeasurementTime[0] = time.time()
-                # Empty 2
-                elif self.ENA.MeasurementNum == 1:
-                    peak_dataX1 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-                    DRM.XEFreq1 = peak_dataX1[1] / 1000000
-                    DRM.XEQ2 = peak_dataX1[2]
-                    self.ENA.MeasurementTime[6] = time.time()
-                # Empty 3
-                elif self.ENA.MeasurementNum == 2:
-                    peak_dataX2 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-                    DRM.XEFreq2 = peak_dataX2[1] / 1000000
-                    DRM.XEQ3 = peak_dataX2[2]
-                    self.ENA.MeasurementTime[12] = time.time()
+            #Empty 1
+            if self.ENA.MeasurementNum == 0:
+                peak_dataX = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
+                DRM.XEFreq = peak_dataX[1]/1000000
+                DRM.XEQ1 = peak_dataX[2]
+                self.ENA.MeasurementTime[0] = time.time()
+            #Empty 2
+            elif self.ENA.MeasurementNum == 1:
+                peak_dataX1 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
+                DRM.XEFreq1 = peak_dataX1[1]/1000000
+                DRM.XEQ2 = peak_dataX1[2]
+                self.ENA.MeasurementTime[6] = time.time()
+            #Empty 3
+            elif self.ENA.MeasurementNum == 2:
+                peak_dataX2 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
+                DRM.XEFreq2 = peak_dataX2[1]/1000000
+                DRM.XEQ3 = peak_dataX2[2]
+                self.ENA.MeasurementTime[12] = time.time()
 
-            # REPLICA
-            elif self.ENA.ChamberState == 'r':
-                peak_dataXR = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-                DRM.XRFreq = peak_dataXR[1] / 1000000
-                DRM.XRQ = peak_dataXR[2]
-                self.ENA.MeasurementTime[9] = time.time()
+        #REPLICA
+        elif self.ENA.ChamberState == 'r':
+            peak_dataXR = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
+            DRM.XRFreq = peak_dataXR[1]/1000000
+            DRM.XRQ = peak_dataXR[2]
+            self.ENA.MeasurementTime[9] = time.time()
 
-            # SPECIMEN
-            elif self.ENA.ChamberState == 's':
-                peak_dataXS = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-                DRM.XSFreq = peak_dataXS[1] / 1000000
-                DRM.XSQ = peak_dataXS[2]
-                self.ENA.MeasurementTime[3] = time.time()
+        #SPECIMEN
+        elif self.ENA.ChamberState == 's':
+            peak_dataXS = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
+            DRM.XSFreq = peak_dataXS[1]/1000000
+            DRM.XSQ = peak_dataXS[2]
+            self.ENA.MeasurementTime[3] = time.time()
 
     def y_axis(self):
         self.ENA.Arduino_Serial.open()
@@ -912,7 +918,7 @@ class GUI(object):
         self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
         self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
         self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-        self.BWID = round(self.results[0], -3) * 1.10
+        self.BWID = round(self.results[0], -3) * 1.20
         self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
         self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
         print("y")
@@ -969,7 +975,7 @@ class GUI(object):
         self.ENA.write('DISP:WIND:TRAC:Y:AUTO ONCE;*WAI')
         self.ENA.write(':CALCulate:MARKer:FUNCtion:TRACking 1')
         self.results = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
-        self.BWID = round(self.results[0], -3) * 1.10
+        self.BWID = round(self.results[0], -3) * 1.20
         self.ENA.write(':SENSe:FREQuency:SPAN %d' % (self.BWID))
         self.ENA.write('SENS:FREQ:CENT %s' % (self.results[1]))
         print("z")
@@ -1048,8 +1054,9 @@ class GUI(object):
         degrees = float(self.RLabelEntry.get())  # get value of degrees entered
         num_rotations = int(
             degrees / 20)  # make the number of rotations calculated an integer for later for loop use
+        self.rotation()  # Rotates turntable by angle specified
 
-        for i in range(num_rotations):
+        '''for i in range(num_rotations):
             while True:  # this loop allows for human error with handling the machine. applied to every section
                 msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
                 if msgbox == 'ok':
@@ -1067,7 +1074,8 @@ class GUI(object):
                     self.ZERLabelEntry.insert(0, str(DRM.ZEFreq))
                     self.ZERLabelQEntry.insert(0, str(DRM.ZEQ1))
                 print('\a')
-                msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
+                msgbox = messagebox.askyesno("Complete",
+                                             "Retake measurements?")  # Asks for user input if read was okay.
                 if msgbox == False:  # If measurements are good, continue
                     break
                 else:
@@ -1078,7 +1086,7 @@ class GUI(object):
                     self.HERLabelQEntry.delete(0, 'end')
                     self.ZERLabelEntry.delete(0, 'end')
                     self.ZERLabelQEntry.delete(0, 'end')
-                    
+
             while True:  # this loop allows for human error with handling the machine. applied to every section
                 msgbox = messagebox.showwarning('WARNING', 'PLACE ORIGINAL IN CAVITY')
                 if msgbox == 'ok':
@@ -1087,17 +1095,17 @@ class GUI(object):
                     self.progress['value'] = 6.66 * 4
                     DRM.sample_freq_x.append(DRM.XSFreq)  # Adds each measurement to the list
                     DRM.sample_q_x.append(DRM.XSQ)
-    
+
                     self.y_axis()
                     self.progress['value'] = 6.66 * 5
                     DRM.sample_freq_y.append(DRM.YSFreq)
                     DRM.sample_q_y.append(DRM.YSQ)
-    
+
                     self.z_axis()
                     self.progress['value'] = 6.66 * 6
                     DRM.sample_freq_z.append(DRM.ZSFreq)
                     DRM.sample_q_z.append(DRM.ZSQ)
-    
+
                     # Put the average values in the GUI
                     self.VSRLabelEntry.insert(0, str(DRM.XSFreq))
                     self.VSRLabelQEntry.insert(0, str(DRM.XSQ))
@@ -1105,9 +1113,10 @@ class GUI(object):
                     self.HSRLabelQEntry.insert(0, str(DRM.YSQ))
                     self.ZSRLabelEntry.insert(0, str(DRM.ZSFreq))
                     self.ZSRLabelQEntry.insert(0, str(DRM.ZSQ))
-    
+
                 print('\a')
-                msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
+                msgbox = messagebox.askyesno("Complete",
+                                             "Retake measurements?")  # Asks for user input if read was okay.
                 if msgbox == False:  # If measurements are good, continue
                     break
                 else:
@@ -1117,8 +1126,8 @@ class GUI(object):
                     self.HSRLabelEntry.delete(0, 'end')
                     self.HSRLabelQEntry.delete(0, 'end')
                     self.ZSRLabelEntry.delete(0, 'end')
-                    self.ZSRLabelQEntry.delete(0, 'end') 
-                    
+                    self.ZSRLabelQEntry.delete(0, 'end')
+
             while True:  # this loop allows for human error with handling the machine. applied to every section
                 msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
                 if msgbox == 'ok':
@@ -1135,9 +1144,10 @@ class GUI(object):
                     self.progress['value'] = 6.66 * 9
                     self.ZERLabel1Entry.insert(0, str(DRM.ZEFreq1))
                     self.ZERLabelQ1Entry.insert(0, str(DRM.ZEQ2))
-    
+
                 print('\a')
-                msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
+                msgbox = messagebox.askyesno("Complete",
+                                             "Retake measurements?")  # Asks for user input if read was okay.
                 if msgbox == False:  # If measurements are good, continue
                     break
                 else:
@@ -1148,7 +1158,7 @@ class GUI(object):
                     self.HERLabelQ1Entry.delete(0, 'end')
                     self.ZERLabel1Entry.delete(0, 'end')
                     self.ZERLabelQ1Entry.delete(0, 'end')
-            
+
             while True:  # this loop allows for human error with handling the machine. applied to every section
                 msgbox = messagebox.showwarning('WARNING', 'PLACE REPLICA IN CAVITY')
                 if msgbox == 'ok':
@@ -1157,26 +1167,26 @@ class GUI(object):
                     self.progress['value'] = 6.66 * 10
                     DRM.replica_freq_x.append(DRM.XRFreq)
                     DRM.replica_q_x.append(DRM.XRQ)
-        
+
                     self.y_axis()
                     self.progress['value'] = 6.66 * 11
                     DRM.replica_freq_y.append(DRM.YRFreq)
                     DRM.replica_q_y.append(DRM.YRQ)
-        
+
                     self.z_axis()
                     self.progress['value'] = 6.66 * 12
                     DRM.replica_freq_z.append(DRM.ZRFreq)
                     DRM.replica_q_z.append(DRM.ZRQ)
-        
-        
+
                     self.VRRLabelEntry.insert(0, str(DRM.XRFreq))
                     self.VRRLabelQEntry.insert(0, str(DRM.XRQ))
                     self.HRRLabelEntry.insert(0, str(DRM.YRFreq))
                     self.HRRLabelQEntry.insert(0, str(DRM.YRQ))
                     self.ZRRLabelEntry.insert(0, str(DRM.ZRFreq))
                     self.ZRRLabelQEntry.insert(0, str(DRM.ZRQ))
-    
-                msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
+
+                msgbox = messagebox.askyesno("Complete",
+                                             "Retake measurements?")  # Asks for user input if read was okay.
                 if msgbox == False:  # If measurements are good, continue
                     break
                 else:
@@ -1186,7 +1196,7 @@ class GUI(object):
                     self.HRRLabelQEntry.delete(0, 'end')
                     self.ZRRLabelEntry.delete(0, 'end')
                     self.ZRRLabelQEntry.delete(0, 'end')
-                    
+
             while True:  # this loop allows for human error with handling the machine. applied to every section
                 msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
                 if msgbox == 'ok':
@@ -1204,7 +1214,8 @@ class GUI(object):
                     self.ZERLabel2Entry.insert(0, str(DRM.ZEFreq2))
                     self.ZERLabelQEntry2.insert(0, str(DRM.ZEQ3))
                     self.root.update_idletasks()
-                msgbox = messagebox.askyesno("Complete", "Retake measurements?")  # Asks for user input if read was okay.
+                msgbox = messagebox.askyesno("Complete",
+                                             "Retake measurements?")  # Asks for user input if read was okay.
                 if msgbox == False:  # If measurements are good, continue
                     break
                 else:
@@ -1216,12 +1227,10 @@ class GUI(object):
                     self.ZERLabel2Entry.delete(0, 'end')
                     self.ZERLabelQEntry2.delete(0, 'end')
 
-        
         # Once the for loop has finished average each measurement.
-        self.rotation()  # Rotates turntable by angle specified
 
         # Will need to do this for all the empty cavity measurements too, and make thier own lists
-        
+
         s_average_freq_x = sum(DRM.sample_freq_x) / num_rotations
         s_average_q_x = sum(DRM.sample_q_x) / num_rotations
         s_average_freq_y = sum(DRM.sample_freq_y) / num_rotations
@@ -1235,15 +1244,13 @@ class GUI(object):
         r_average_q_x = sum(DRM.replica_q_x) / len(DRM.replica_q_x)
         r_average_q_y = sum(DRM.replica_q_y) / len(DRM.replica_q_y)
         r_average_q_z = sum(DRM.replica_q_z) / len(DRM.replica_q_z)
-        
-        
-                
+
         self.TempRead()
         DRM.calc(self.ENA)
         self.progress['value'] = 100
         self.DielectricResultEntry.insert(0, str(self.ENA.e_star1))
         self.TempLabelEntry.insert(0, str(self.ENA.temperature))
-        self.root.mainloop()
+        self.root.mainloop()'''
 
     def show_info(self):
         messagebox.showinfo('Warning', 'unable to retrieve parameters')
