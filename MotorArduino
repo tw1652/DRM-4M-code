@@ -13,7 +13,10 @@ float readingX;
 float readingY;
 float readingZ;
 float temperature = -300;
-int value = 5; // Not a value used in the loop so good 
+int value = 9; // Not a value used in the loop so good 
+int value2 = 9; 
+bool motorStatus = false;
+
 // Define the number of steps per revolution (360° / 18° per step), as per datasheet
 // Eg. to loop once, it would take 20 runs of the for loop in the rotation() function
 int stepsPerRevolution = 20;
@@ -26,39 +29,49 @@ void setup(){
   pinMode(2, OUTPUT); //X1, set pin modes
   pinMode(4, OUTPUT);//Y1
   pinMode(6, OUTPUT);//Z1
+
   pinMode(A, OUTPUT);
   pinMode(aMinus, OUTPUT);
   pinMode(B, OUTPUT);
   pinMode(bMinus, OUTPUT);
+
+  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() 
 { 
-  while (Serial.available()>0){
+  if (Serial.available()){
     value = Serial.parseInt();
     delay(50);
+    value2 = Serial.parseInt();
+    delay(50);
+    
+    if (value == 0){
+      X_axis();
+    } else if (value == 1){
+      Y_axis();
+    } else if(value == 2){
+      Z_axis();
+    } else if(value == 3){
+      Temp();
+    }
+    else if (value == 4){
+      //flash(5);
+      motorStatus = true;
+    }
+    else if (value == 5){
+      axisReset();
+    }
   }
-  if (value == 0){
-    X_axis();
-  } else if (value == 1){
-    Y_axis();
-  } else if(value == 2){
-    Z_axis();
-  } else if(value == 3){
-    Temp();
-  }
-  else if(value == 4){
-    // Maybe add corresponding delay here to the python, or a bit longer here than the python to allow the value to be passed through.
-    delay(2500);
-    rotation(value, 1); // Takes rotation value from the serial port
+  if (motorStatus) {
+    rotation(value2); // Takes rotation value from the serial port
   }
 }
 
-void rotation(int angleInput, int direction){
+void rotation(int angleInput){
   stepsPerRevolution = (angleInput + 9)/18; // Integer rounding
-
-  if (direction == 1) { // clockwise
-   for (int i = 0; i < stepsPerRevolution; i++) { 
+  for (int i = 0; i < stepsPerRevolution; i++) { 
+    if (!motorStatus) return; // Stop if motor is not turning
     // Step 1
     digitalWrite(A, HIGH);
     digitalWrite(aMinus, LOW);
@@ -83,50 +96,12 @@ void rotation(int angleInput, int direction){
     // Step 4
     digitalWrite(A, LOW);
     digitalWrite(aMinus, HIGH);
-    digitalWrite(B, LOW);
-    digitalWrite(bMinus, HIGH);
-    delay(5);
-
-    }
-  } 
-  
-
-  else if (direction == 2) { // counter clockwise
-    for (int i = 0; i < stepsPerRevolution; i++) {
-    // Step 1
-    digitalWrite(A, LOW);
-    digitalWrite(aMinus, HIGH);
-    digitalWrite(B, LOW);
-    digitalWrite(bMinus, HIGH);
-    delay(5);
-
-    // Step 2
-    digitalWrite(A, LOW);
-    digitalWrite(aMinus, HIGH);
-    digitalWrite(B, HIGH);
-    digitalWrite(bMinus, LOW);
-    delay(5);
-
-    // Step 3
-    digitalWrite(A, HIGH);
-    digitalWrite(aMinus, LOW);
-    digitalWrite(B, HIGH);
-    digitalWrite(bMinus, LOW);
-    delay(5);
-
-    // Step 4
-    digitalWrite(A, HIGH);
-    digitalWrite(aMinus, LOW);
     digitalWrite(B, LOW);
     digitalWrite(bMinus, HIGH);
     delay(5);
     
-    }
-  }
-    else {
-      Serial.println("Invalid direction");
-      return;
-    }
+  } 
+  motorStatus = false;
 }
 
 
@@ -146,6 +121,16 @@ void Z_axis(){
   digitalWrite (4, LOW);
   digitalWrite (6, LOW);
 }
+
+void axisReset() {
+  //X
+  digitalWrite (2, HIGH);
+  //Y
+  digitalWrite (4, HIGH);
+  // Z
+  digitalWrite (6, HIGH);
+}
+
 void Temp(){
   temperature = dht.readTemperature();
   if (isnan(temperature)) {
@@ -153,5 +138,14 @@ void Temp(){
   } else {
     Serial.print(temperature);
     Serial.println(" °C");
+  }
+}
+
+void flash(int num) {
+  for (int i = 0; i < num; i++) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(250);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(250);
   }
 }
