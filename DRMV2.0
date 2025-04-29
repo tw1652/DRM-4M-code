@@ -18,6 +18,10 @@ num_runs = 1  # Number of measured runs
 # test comment so MPR can see it has been updated - and again - and one more
 
 class DRM(object):
+
+    permittivity_average_list = []
+    permittivity_average = 0
+
     XSFreq = 0  # Put these here so XSFreq and XSQ are used in "run" so that it can find it, otherwise has a fit
     XSQ = 0
     sample_freq_x = []  # List of sample values to store through the loop
@@ -150,7 +154,7 @@ class DRM(object):
         self.vs1 = (self.vs1) * 0.000001  # m^3 from geometry
         self.vs2 = (self.vs2) * 0.000001  # m^3
 
-        for i in range(num_runs):
+        for i in range(num_measurements):
             f0_x1_before = DRM.XEFreq
             Q0_x1_before = DRM.XEQ1
 
@@ -704,9 +708,9 @@ class GUI(object):
         # R - Number of degrees to rotate sample and replica
         self.RFrame = Frame(self.tab1, borderwidth=10)
         self.RFrame.pack(side=TOP, anchor=W, fill="x")
-        self.RLabel = Label(self.RFrame, text="Angle to rotate sample/replica per stage (degrees)")
+        self.RLabel = Label(self.RFrame, text="Number of rotations of the turntable")
         self.RLabel.pack(side=TOP, anchor=W)
-        self.RLabelTxt = StringVar()
+        self.RLabelTxt = IntVar()
         self.RLabelEntry = Entry(self.RFrame, textvariable=self.RLabelTxt, width=25)
         self.RLabelEntry.pack(side=TOP, anchor=W)
 
@@ -824,13 +828,20 @@ class GUI(object):
         # RLabelTxt taken in the GUI
         self.ENA.Arduino_Serial.open()  # Opens arduino serial port
         time.sleep(2)  # Sleeps for 2 seconds
-        degrees = float(self.RLabelEntry.get())  # get value of degrees entered
+        num_rotations = float(self.RLabelEntry.get())
+
+        if num_rotations == 0:
+            num_rotations = 180
+        elif num_rotations == 1:
+            num_rotations = 2
+
+        rotation = int(180/num_rotations)  # get value of degrees entered
         self.mode = 4  # Corresponds to mode 4, which is to rotate the sample
-        message = f"{self.mode} {int(degrees)}\n"  # Format is self.mode, degrees
+        message = f"{self.mode} {int(rotation)}\n"  # Format is self.mode, degrees
         self.ENA.Arduino_Serial.write(message.encode('utf-8'))  # sends over "self.mode" via serial
         print("Sent:", message)
-        print("Degrees rotated: ")
-        print(degrees)
+        print("Rotations: ")
+        print(rotation)
         time.sleep(5)
         self.ENA.Arduino_Serial.close()
 
@@ -1051,12 +1062,14 @@ class GUI(object):
 
     def run(self):
         self.root.update_idletasks()
-        degrees = float(self.RLabelEntry.get())  # get value of degrees entered
-        num_rotations = int(
-            degrees / 20)  # make the number of rotations calculated an integer for later for loop use
         self.rotation()  # Rotates turntable by angle specified
+        num_rotations = int(self.RLabelEntry.get())
+        if num_rotations == 0:
+            num_measurements = 1
+        else:
+            num_measurements = num_rotations
 
-        for i in range(num_rotations):
+        for i in range(num_measurements):
             while True:  # this loop allows for human error with handling the machine. applied to every section
                 msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
                 if msgbox == 'ok':
@@ -1237,12 +1250,12 @@ class GUI(object):
 
             # Will need to do this for all the empty cavity measurements too, and make thier own lists
 
-            s_average_freq_x = sum(DRM.sample_freq_x) / num_rotations
-            s_average_q_x = sum(DRM.sample_q_x) / num_rotations
-            s_average_freq_y = sum(DRM.sample_freq_y) / num_rotations
-            s_average_q_y = sum(DRM.sample_q_y) / num_rotations
-            s_average_freq_z = sum(DRM.sample_freq_z) / num_rotations
-            s_average_q_z = sum(DRM.sample_q_z) / num_rotations
+            s_average_freq_x = sum(DRM.sample_freq_x) / len(DRM.sample_freq_x)
+            s_average_q_x = sum(DRM.sample_q_x) / len(DRM.sample_q_x)
+            s_average_freq_y = sum(DRM.sample_freq_y) / len(DRM.sample_freq_y)
+            s_average_q_y = sum(DRM.sample_q_y) / len(DRM.sample_q_y)
+            s_average_freq_z = sum(DRM.sample_freq_z) / len(DRM.sample_freq_z)
+            s_average_q_z = sum(DRM.sample_q_z) / len(DRM.sample_q_z)
 
             r_average_freq_x = sum(DRM.replica_freq_x) / len(DRM.replica_freq_x)
             r_average_freq_y = sum(DRM.replica_freq_y) / len(DRM.replica_freq_y)
@@ -1251,6 +1264,10 @@ class GUI(object):
             r_average_q_y = sum(DRM.replica_q_y) / len(DRM.replica_q_y)
             r_average_q_z = sum(DRM.replica_q_z) / len(DRM.replica_q_z)
 
+        DRM.permittvity_average_list.append(DRM.e_star1)
+        self.DielectricResultEntry.insert(0, str(self.DRM.permittivity_average))
+        print("Average permittivity:")
+        print(permittivity_average_list)
         self.root.mainloop()
 
     def show_info(self):
@@ -1329,6 +1346,8 @@ class GUI(object):
         fh.write("FREQ EMPTY Z1: %s\n" % DRM.ZEFreq)
         fh.write("Q EMPTY Z1: %s\n" % DRM.ZEQ1)
         fh.write("INDIVIDUAL SAMPLE X FREQS: %s\n" % DRM.sample_freq_x)
+        fh.write("INDIVIDUAL SAMPLE Y FREQS: %s\n" % DRM.sample_freq_y)
+        fh.write("INDIVIDUAL SAMPLE Z FREQS: %s\n" % DRM.sample_freq_z)
         fh.write("FREQ SAMPLE X AVG: %s\n" % DRM.s_average_freq_x)
         fh.write("FREQ SAMPLE Y AVG: %s\n" % DRM.s_average_freq_y)
         fh.write("FREQ SAMPLE Z AVG: %s\n" % DRM.s_average_freq_y)
@@ -1369,7 +1388,8 @@ class GUI(object):
         fh.write("ALPHA1 VOL: %s\n" % self.ENA.alpha1_vol)
         fh.write("ALPHA2 VOL: %s\n" % self.ENA.alpha2_vol)
         fh.write("ALPHA1: %s\n" % self.ENA.alpha1)
-        fh.write("PERMITTIVITY OF SAMPLE: %s\n" % self.ENA.e_star1)
+        fh.write("PERMITTIVITYS OF SAMPLE: %s\n" % DRM.permittivity_average_list)
+        fh.write("PERMITTIVITY OF SAMPLE %s\n" % DRM.permittivity_average)
         fh.write("LOSS TANGENT OF MATERIAL: %s\n" % self.ENA.tand)
         fh.write("COMMENTS: %s\n" % self.CommentBox.get("1.0", END))
         msgbox = messagebox.showwarning('File Saved', 'drm_GUI_analysis%s.txt' % j)
