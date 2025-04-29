@@ -69,7 +69,8 @@ void loop()
 }
 
 void rotation(int angleInput){
-  stepsPerRevolution = (angleInput + 9)/18; // Integer rounding
+  stepsPerRevolution = ((angleInput)*1.43)*3; 
+  // 1.43 for how many degrees to roatate the gear, multiply by 3 for a 1:3 gear ratio
   for (int i = 0; i < stepsPerRevolution; i++) { 
     if (!motorStatus) return; // Stop if motor is not turning
     // Step 1
