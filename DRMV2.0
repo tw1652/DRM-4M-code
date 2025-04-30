@@ -55,6 +55,9 @@ class DRM(object):
     XEQ1 = 0
     ZEFreq = 0
     ZEQ1 = 0
+    empty_freq_x, empty1_q_x = [], []  # List of replica values to store through the loop
+    empty_freq_y, empty1_q_y = [], []
+    empty_freq_z, empty1_q_z = [], []
 
     YEFreq1 = 0
     XEFreq1 = 0
@@ -62,6 +65,9 @@ class DRM(object):
     YEQ2 = 0
     ZEFreq1 = 0
     ZEQ2 = 0
+    empty1_freq_x, empty2_q_x = [], []  # List of replica values to store through the loop
+    empty1_freq_y, empty2_q_y = [], []
+    empty1_freq_z, empty2_q_z = [], []
 
     XEFreq2 = 0
     XEQ3 = 0
@@ -69,6 +75,9 @@ class DRM(object):
     YEQ3 = 0
     ZEFreq2 = 0
     ZEQ3 = 0
+    empty2_freq_x, empty3_q_x = [], []  # List of replica values to store through the loop
+    empty2_freq_y, empty3_q_y = [], []
+    empty2_freq_z, empty3_q_z = [], []
 
     def __init__(self):
         self.ChamberState = [  # possible subject positions
@@ -154,7 +163,7 @@ class DRM(object):
         self.vs1 = (self.vs1) * 0.000001  # m^3 from geometry
         self.vs2 = (self.vs2) * 0.000001  # m^3
 
-        num_rotations = int(self.RLabelEntry.get())
+        num_rotations = int(GUI.RLabelEntry.get())
         num_measurements = num_rotations
         if num_rotations == 0:
             num_measurements = 1
@@ -239,6 +248,216 @@ class DRM(object):
             # measured resonant frequency (MHz) and Q-factor, empty, z, 2, after
             f0_z2_after = DRM.ZEFreq2
             Q0_z2_after = DRM.ZEQ3
+
+            # TIMING
+
+            # weights for f0 and Q0 measured before and after sample 1
+            w_x1_before = (self.MeasurementTime[6] - self.MeasurementTime[3]) / (
+                    self.MeasurementTime[6] - self.MeasurementTime[0])
+            w_x1_after = (self.MeasurementTime[3] - self.MeasurementTime[0]) / (
+                    self.MeasurementTime[6] - self.MeasurementTime[0])
+
+            w_y1_before = (self.MeasurementTime[7] - self.MeasurementTime[4]) / (
+                    self.MeasurementTime[7] - self.MeasurementTime[1])
+            w_y1_after = (self.MeasurementTime[4] - self.MeasurementTime[1]) / (
+                    self.MeasurementTime[7] - self.MeasurementTime[1])
+
+            w_z1_before = (self.MeasurementTime[8] - self.MeasurementTime[5]) / (
+                    self.MeasurementTime[8] - self.MeasurementTime[2])
+            w_z1_after = (self.MeasurementTime[5] - self.MeasurementTime[2]) / (
+                    self.MeasurementTime[8] - self.MeasurementTime[2])
+
+            # weights for f0 and Q0 measured before and after sample 2
+            w_x2_before = (self.MeasurementTime[12] - self.MeasurementTime[9]) / (
+                    self.MeasurementTime[12] - self.MeasurementTime[6])
+            w_x2_after = (self.MeasurementTime[9] - self.MeasurementTime[6]) / (
+                    self.MeasurementTime[12] - self.MeasurementTime[6])
+
+            w_y2_before = (self.MeasurementTime[13] - self.MeasurementTime[10]) / (
+                    self.MeasurementTime[13] - self.MeasurementTime[7])
+            w_y2_after = (self.MeasurementTime[10] - self.MeasurementTime[7]) / (
+                    self.MeasurementTime[13] - self.MeasurementTime[7])
+
+            w_z2_before = (self.MeasurementTime[14] - self.MeasurementTime[11]) / (
+                    self.MeasurementTime[14] - self.MeasurementTime[8])
+            w_z2_after = (self.MeasurementTime[11] - self.MeasurementTime[8]) / (
+                    self.MeasurementTime[14] - self.MeasurementTime[8])
+
+            # EMPTY 1 WEIGHTED AVERAGE
+
+            # measured resonant frequency (MHz) and Q-factor, empty, x, 1
+            # mean of 'before' and 'after'
+            f0_x1 = w_x1_before * f0_x1_before + w_x1_after * f0_x1_after
+            Q0_x1 = w_x1_before * Q0_x1_before + w_x1_after * Q0_x1_after
+
+            # measured resonant frequency (MHz) and Q-factor, empty, y, 1
+            # mean of 'before' and 'after'
+            f0_y1 = w_y1_before * f0_y1_before + w_y1_after * f0_y1_after
+            Q0_y1 = w_y1_before * Q0_y1_before + w_y1_after * Q0_y1_after
+
+            # measured resonant frequency (MHz) and Q-factor, empty, z, 1
+            # mean of 'before' and 'after'
+            f0_z1 = w_z1_before * f0_z1_before + w_z1_after * f0_z1_after
+            Q0_z1 = w_z1_before * Q0_z1_before + w_z1_after * Q0_z1_after
+
+            # EMPTY 2 WEIGHTED AVERAGE
+
+            # measured resonant frequency (MHz) and Q-factor, empty, x, 2
+            # mean of 'before' and 'after'
+            f0_x2 = w_x2_before * f0_x2_before + w_x2_after * f0_x2_after
+            Q0_x2 = w_x2_before * Q0_x2_before + w_x2_after * Q0_x2_after
+
+            # measured resonant frequency (MHz) and Q-factor, empty, y, 2
+            # mean of 'before' and 'after'
+            f0_y2 = w_y2_before * f0_y2_before + w_y2_after * f0_y2_after
+            Q0_y2 = w_y2_before * Q0_y2_before + w_y2_after * Q0_y2_after
+
+            # measured resonant frequency (MHz) and Q-factor, empty, z, 2
+            # mean of 'before' and 'after'
+            f0_z2 = w_z2_before * f0_z2_before + w_z2_after * f0_z2_after
+            Q0_z2 = w_z2_before * Q0_z2_before + w_z2_after * Q0_z2_after
+
+            # CALCULATE COMPLEX PERMITTIVITY
+
+            # shifts in complex frequency
+            self.deltaOmega_x1 = (f_x1 - f0_x1) / f0_x1 + 0.5 * 1j * (1. / Q_x1 - 1. / Q0_x1)
+            self.deltaOmega_y1 = (f_y1 - f0_y1) / f0_y1 + 0.5 * 1j * (1. / Q_y1 - 1. / Q0_y1)
+            self.deltaOmega_z1 = (f_z1 - f0_z1) / f0_z1 + 0.5 * 1j * (1. / Q_z1 - 1. / Q0_z1)
+
+            self.sig_r_omega1 = 1. / self.deltaOmega_x1 + 1. / self.deltaOmega_y1 + 1. / self.deltaOmega_z1
+
+            # or measured data (comment out if using previous data)
+            self.deltaOmega_x2 = (f_x2 - f0_x2) / f0_x2 + 0.5 * 1j * (1. / Q_x2 - 1. / Q0_x2)
+            self.deltaOmega_y2 = (f_y2 - f0_y2) / f0_y2 + 0.5 * 1j * (1. / Q_y2 - 1. / Q0_y2)
+            self.deltaOmega_z2 = (f_z2 - f0_z2) / f0_z2 + 0.5 * 1j * (1. / Q_z2 - 1. / Q0_z2)
+
+            self.sig_r_omega2 = 1. / self.deltaOmega_x2 + 1. / self.deltaOmega_y2 + 1. / self.deltaOmega_z2
+
+            # Clausius-Mosotti factor for material 2 (replica)
+            self.alpha2 = (self.e_star2 - 1) / (self.e_star2 + 2)
+
+            # new analysis, quadratic fit
+
+            p = [-0.056155651313900 + 0.000580840419927j,
+                 -0.468920921941625 + 0.000960280535180j,
+                 0.0000 + 0.0000j]
+
+            # permittivity estimates from volume only
+            self.alpha1_vol = np.polyval(p, vc / (self.vs1 * self.sig_r_omega1))
+            self.e_star1_vol = (1 + 2 * self.alpha1_vol) / (1 - self.alpha1_vol)
+            self.alpha2_vol = np.polyval(p, vc / (self.vs2 * self.sig_r_omega2))
+            self.e_star2_vol = (1 + 2 * self.alpha2_vol) / (1 - self.alpha2_vol)
+
+            # Clausius-Mosotti factor for material 1 (original)
+
+            self.alpha1 = self.alpha2 * np.polyval(p, vc / (self.vs1 * self.sig_r_omega1)) / np.polyval(p, vc / (
+                    self.vs2 * self.sig_r_omega2))
+
+            # permittivity of material 1 (SPECIMEN)
+            self.e_star1 = (1 + (2 * self.alpha1)) / (1 - self.alpha1)
+            print(self.e_star1)
+
+            # loss tangent of material 1 (original)
+            self.tand = -np.imag(self.e_star1) / np.real(self.e_star1)
+
+            # Add a delay to control the frequency of calculations
+            time.sleep(10)  # Adjust the delay time as needed
+
+    def calc_all(self):
+        permittivities = []
+
+        # volume of cavity
+        vc = 0.149 * 0.141 * 0.169
+        self.vs1 = (self.vs1) * 0.000001  # m^3 from geometry
+        self.vs2 = (self.vs2) * 0.000001  # m^3
+
+        '''num_rotations = int(self.RLabelEntry.get())
+        num_measurements = num_rotations
+        if num_rotations == 0:
+            num_measurements = 1'''
+
+        for i in range(num_measurements):
+            # measured resonant frequency (MHz) and Q-factor, empty, x, 1, before
+            f0_x1_before = DRM.empty_freq_x[i] # Lists start a zero, so there may be some problem with how it
+            # works with i and num_measurements being set to one on zero, maybe new variable? or is i fine?
+            Q0_x1_before = DRM.empty1_q_x[i]
+
+            # measured resonant frequency (MHz) and Q-factor, empty, y, 1, before
+            f0_y1_before = DRM.empty_freq_y[i]
+            Q0_y1_before = DRM.empty1_q_y[i]
+
+            # measured resonant frequency (MHz) and Q-factor, empty, z, 1, before
+            f0_z1_before = DRM.empty_freq_z[i]
+            Q0_z1_before = DRM.empty1_q_z[i]
+
+            # SPECIMEN 1 (ORIGINAL)
+
+            # measured resonant frequency (MHz) and Q-factor, sample 1, x
+            f_x1 = DRM.sample_freq_x[i]
+            Q_x1 = DRM.sample_q_x[i]
+
+            # measured resonant frequency (MHz) and Q-factor, sample 1, y
+            f_y1 = DRM.sample_freq_y[i]
+            Q_y1 = DRM.sample_q_y[i]
+
+            # measured resonant frequency (MHz) and Q-factor, sample 1, z
+            f_z1 = DRM.sample_freq_z[i]
+            Q_z1 = DRM.sample_q_y[i]
+
+            # EMPTY (IN BETWEEN SAMPLES 1 AND 2)
+
+            # measured resonant frequency (MHz) and Q-factor, empty, x, 1, after
+            f0_x1_after = DRM.empty1_freq_x[i]
+            Q0_x1_after = DRM.empty2_q_x[i]
+
+            # measured resonant frequency (MHz) and Q-factor, empty, y, 1, after
+            f0_y1_after = DRM.empty1_freq_y[i]
+            Q0_y1_after = DRM.empty2_q_y[i]
+
+            # measured resonant frequency (MHz) and Q-factor, empty, z, 1, after
+            f0_z1_after = DRM.empty1_freq_z[i]
+            Q0_z1_after = DRM.empty2_q_z[i]
+
+            # 'after' for sample 1 is 'before' for sample 2
+            # resonant frequency (MHz) and Q-factor, empty, x, 2, before
+            f0_x2_before = f0_x1_after # no clue wtf this stage is, don't think it needs changing?
+            Q0_x2_before = Q0_x1_after
+
+            # resonant frequency (MHz) and Q-factor, empty, y, 2, before
+            f0_y2_before = f0_y1_after
+            Q0_y2_before = Q0_y1_after
+
+            # resonant frequency (MHz) and Q-factor, empty, z, 2, before
+            f0_z2_before = f0_z1_after
+            Q0_z2_before = Q0_z1_after
+
+            # SAMPLE 2 (REPLICA)
+
+            # measured resonant frequency (MHz) and Q-factor, sample 2, x
+            f_x2 = DRM.replica_freq_x[i]
+            Q_x2 = DRM.replica_q_x[i]
+
+            # measured resonant frequency (MHz) and Q-factor, sample 2, y
+            f_y2 = DRM.replica_freq_y[i]
+            Q_y2 = DRM.replica_q_y[i]
+
+            # measured resonant frequency (MHz) and Q-factor, sample 2, z
+            f_z2 = DRM.replica_freq_z[i]
+            Q_z2 = DRM.replica_q_z[i]
+
+            # EMPTY (AT END)
+
+            # measured resonant frequency (MHz) and Q-factor, empty, x, 2, after
+            f0_x2_after = DRM.empty2_freq_x[i]
+            Q0_x2_after = DRM.empty3_q_x[i]
+
+            # measured resonant frequency (MHz) and Q-factor, empty, y, 2, after
+            f0_y2_after = DRM.empty2_freq_y[i]
+            Q0_y2_after = DRM.empty3_q_y[i]
+
+            # measured resonant frequency (MHz) and Q-factor, empty, z, 2, after
+            f0_z2_after = DRM.empty2_freq_z[i]
+            Q0_z2_after = DRM.empty3_q_z[i]
 
             # TIMING
 
@@ -1067,7 +1286,6 @@ class GUI(object):
 
     def run(self):
         self.root.update_idletasks()
-        self.rotation()  # Rotates turntable by angle specified
         num_rotations = int(self.RLabelEntry.get())
         num_measurements = num_rotations
         if num_rotations == 0:
@@ -1077,19 +1295,27 @@ class GUI(object):
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
             if msgbox == 'ok':
-                self.ENA.ChamberState = 'e'
-                self.x_axis()  # measures x direction
-                self.progress['value'] = 6.66  # incraments progress bar
-                self.VERLabelEntry.insert(0, str(DRM.XEFreq))
-                self.VERLabelQEntry.insert(0, str(DRM.XEQ1))
-                self.y_axis()  # measures y direction
-                self.progress['value'] = 6.66 * 2
-                self.HERLabelEntry.insert(0, str(DRM.YEFreq))
-                self.HERLabelQEntry.insert(0, str(DRM.YEQ1))
-                self.z_axis()  # measures z direction
-                self.progress['value'] = 6.66 * 3
-                self.ZERLabelEntry.insert(0, str(DRM.ZEFreq))
-                self.ZERLabelQEntry.insert(0, str(DRM.ZEQ1))
+                for i in range(num_measurements):
+                    self.rotation()  # Rotates turntable by angle specified
+                    self.ENA.ChamberState = 'e'
+                    self.x_axis()  # measures x direction
+                    self.progress['value'] = 6.66  # incraments progress bar
+                    self.VERLabelEntry.insert(0, str(DRM.XEFreq))
+                    self.VERLabelQEntry.insert(0, str(DRM.XEQ1))
+                    DRM.empty_freq_x.append(DRM.XEFreq) # Adds each measurement to the list
+                    DRM.empty1_q_x.append(DRM.XEQ1)
+                    self.y_axis()  # measures y direction
+                    self.progress['value'] = 6.66 * 2
+                    self.HERLabelEntry.insert(0, str(DRM.YEFreq))
+                    self.HERLabelQEntry.insert(0, str(DRM.YEQ1))
+                    DRM.empty_freq_y.append(DRM.YEFreq)  # Adds each measurement to the list
+                    DRM.empty1_q_y.append(DRM.YEQ1)
+                    self.z_axis()  # measures z direction
+                    self.progress['value'] = 6.66 * 3
+                    self.ZERLabelEntry.insert(0, str(DRM.ZEFreq))
+                    self.ZERLabelQEntry.insert(0, str(DRM.ZEQ1))
+                    DRM.empty_freq_z.append(DRM.ZEFreq)  # Adds each measurement to the list
+                    DRM.empty1_q_z.append(DRM.ZEQ1)
             print('\a')
             msgbox = messagebox.askyesno("Complete",
                                          "Retake measurements?")  # Asks for user input if read was okay.
@@ -1108,6 +1334,7 @@ class GUI(object):
             msgbox = messagebox.showwarning('WARNING', 'PLACE ORIGINAL IN CAVITY')
             if msgbox == 'ok':
                 for i in range(num_measurements):
+                    self.rotation()  # Rotates turntable by angle specified
                     self.ENA.ChamberState = 's'
                     self.x_axis()
                     self.progress['value'] = 6.66 * 4
@@ -1139,6 +1366,7 @@ class GUI(object):
                     s_average_freq_z = sum(DRM.sample_freq_z) / len(DRM.sample_freq_z)
                     s_average_q_z = sum(DRM.sample_q_z) / len(DRM.sample_q_z)
 
+
                 print('\a')
             msgbox = messagebox.askyesno("Complete",
                                          "Retake measurements?")  # Asks for user input if read was okay.
@@ -1156,19 +1384,27 @@ class GUI(object):
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
             if msgbox == 'ok':
-                self.ENA.ChamberState = 'e'
-                self.x_axis()
-                self.progress['value'] = 6.66 * 7
-                self.VERLabel1Entry.insert(0, str(DRM.XEFreq1))
-                self.VERLabel1QEntry.insert(0, str(DRM.XEQ2))
-                self.y_axis()
-                self.progress['value'] = 6.66 * 8
-                self.HERLabel1Entry.insert(0, str(DRM.YEFreq1))
-                self.HERLabelQ1Entry.insert(0, str(DRM.YEQ2))
-                self.z_axis()
-                self.progress['value'] = 6.66 * 9
-                self.ZERLabel1Entry.insert(0, str(DRM.ZEFreq1))
-                self.ZERLabelQ1Entry.insert(0, str(DRM.ZEQ2))
+                for i in range(num_measurements):
+                    self.rotation()  # Rotates turntable by angle specified
+                    self.ENA.ChamberState = 'e'
+                    self.x_axis()
+                    self.progress['value'] = 6.66 * 7
+                    self.VERLabel1Entry.insert(0, str(DRM.XEFreq1))
+                    self.VERLabel1QEntry.insert(0, str(DRM.XEQ2))
+                    DRM.empty1_freq_x.append(DRM.XEFreq1)  # Adds each measurement to the list
+                    DRM.empty2_q_x.append(DRM.XEQ2)
+                    self.y_axis()
+                    self.progress['value'] = 6.66 * 8
+                    self.HERLabel1Entry.insert(0, str(DRM.YEFreq1))
+                    self.HERLabelQ1Entry.insert(0, str(DRM.YEQ2))
+                    DRM.empty1_freq_y.append(DRM.YEFreq1)  # Adds each measurement to the list
+                    DRM.empty2_q_y.append(DRM.YEQ2)
+                    self.z_axis()
+                    self.progress['value'] = 6.66 * 9
+                    self.ZERLabel1Entry.insert(0, str(DRM.ZEFreq1))
+                    self.ZERLabelQ1Entry.insert(0, str(DRM.ZEQ2))
+                    DRM.empty1_freq_z.append(DRM.ZEFreq1)  # Adds each measurement to the list
+                    DRM.empty2_q_z.append(DRM.ZEQ2)
 
             print('\a')
             msgbox = messagebox.askyesno("Complete",
@@ -1188,6 +1424,7 @@ class GUI(object):
             msgbox = messagebox.showwarning('WARNING', 'PLACE REPLICA IN CAVITY')
             if msgbox == 'ok':
                 for i in range(num_measurements):
+                    self.rotation()  # Rotates turntable by angle specified
                     self.ENA.ChamberState = 'r'
                     self.x_axis()
                     self.progress['value'] = 6.66 * 10
@@ -1237,19 +1474,28 @@ class GUI(object):
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
             if msgbox == 'ok':
-                self.ENA.ChamberState = 'e'
-                self.x_axis()
-                self.progress['value'] = 6.66 * 13
-                self.VERLabel2Entry.insert(0, str(DRM.XEFreq2))
-                self.VERLabelQEntry2.insert(0, str(DRM.XEQ3))
-                self.y_axis()
-                self.progress['value'] = 6.66 * 14
-                self.HERLabel2Entry.insert(0, str(DRM.YEFreq2))
-                self.HERLabelQEntry2.insert(0, str(DRM.YEQ3))
-                self.z_axis()
-                self.progress['value'] = 6.66 * 14.5
-                self.ZERLabel2Entry.insert(0, str(DRM.ZEFreq2))
-                self.ZERLabelQEntry2.insert(0, str(DRM.ZEQ3))
+                for i in range(num_measurements):
+                    self.rotation()  # Rotates turntable by angle specified
+                    self.ENA.ChamberState = 'e'
+                    self.x_axis()
+                    self.progress['value'] = 6.66 * 13
+                    self.VERLabel2Entry.insert(0, str(DRM.XEFreq2))
+                    self.VERLabelQEntry2.insert(0, str(DRM.XEQ3))
+                    DRM.empty2_freq_x.append(DRM.XEFreq2)  # Adds each measurement to the list
+                    DRM.empty3_q_x.append(DRM.XEQ3)
+                    self.y_axis()
+                    self.progress['value'] = 6.66 * 14
+                    self.HERLabel2Entry.insert(0, str(DRM.YEFreq2))
+                    self.HERLabelQEntry2.insert(0, str(DRM.YEQ3))
+                    DRM.empty2_freq_y.append(DRM.XEFreq2)  # Adds each measurement to the list
+                    DRM.empty3_q_y.append(DRM.XEQ3)
+                    self.z_axis()
+                    self.progress['value'] = 6.66 * 14.5
+                    self.ZERLabel2Entry.insert(0, str(DRM.ZEFreq2))
+                    self.ZERLabelQEntry2.insert(0, str(DRM.ZEQ3))
+                    DRM.empty2_freq_z.append(DRM.ZEFreq2)  # Adds each measurement to the list
+                    DRM.empty3_q_z.append(DRM.ZEQ3)
+                print("\a")
                 self.root.update_idletasks()
             msgbox = messagebox.askyesno("Complete",
                                          "Retake measurements?")  # Asks for user input if read was okay.
@@ -1266,10 +1512,10 @@ class GUI(object):
 
         self.TempRead()
         DRM.calc(self.ENA)
+        DRM.calc_all(self.ENA)
         self.progress['value'] = 100
         self.DielectricResultEntry.insert(0, str(self.ENA.e_star1))
         self.TempLabelEntry.insert(0, str(self.ENA.temperature))
-
 
         DRM.permittvity_average_list.append(DRM.e_star1)
         self.DielectricResultEntry.insert(0, str(self.DRM.permittivity_average))
