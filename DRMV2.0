@@ -1527,9 +1527,9 @@ class GUI(object):
         #self.drm.vs1 = float(self.VS1LabelEntry.get())  # pass volume values, etc.  This line doesn't work why?
         #self.drm.vs2 = float(self.VS2LabelEntry.get())
         #DRM.permittvity_average_list.append(DRM.e_star1) # What does this line do?
-        self.DielectricResultEntry.insert(0, str(self.DRM.permittivity_average))
+        self.DielectricResultEntry.insert(0, str(DRM.permittivity_average))
         print("Average permittivity:")
-        print(permittivity_average)
+        print(DRM.permittivity_average)
         self.root.mainloop()
 
     def show_info(self):
