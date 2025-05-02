@@ -19,7 +19,6 @@ num_runs = 1  # Number of measured runs
 
 class DRM(object):
 
-    permittivity_average_list = []
     permittivity_average = 0
 
     XSFreq = 0  # Put these here so XSFreq and XSQ are used in "run" so that it can find it, otherwise has a fit
@@ -570,6 +569,7 @@ class DRM(object):
             # Add a delay to control the frequency of calculations
             time.sleep(10)  # Adjust the delay time as needed
 
+        permittivity_average = sum(permittivities)/len(permittivities)
 
 class GUI(object):
 
@@ -1065,6 +1065,19 @@ class GUI(object):
         time.sleep(5)
         self.ENA.Arduino_Serial.close()
 
+    def return_rotation(self):
+        # This is the function to rotate the sample, this can be called after x, y and z axes are measured.
+        # RLabelTxt taken in the GUI
+        self.ENA.Arduino_Serial.open()  # Opens arduino serial port
+        time.sleep(2)  # Sleeps for 2 seconds
+        self.mode = 4  # Corresponds to mode 4, which is to rotate the sample
+        message = f"{self.mode} {180}\n"  # Format is self.mode, degrees
+        self.ENA.Arduino_Serial.write(message.encode('utf-8'))  # sends over "self.mode" via serial
+        print("Sent:", message)
+        print("Return rotation of 180 deg")
+        time.sleep(5)
+        self.ENA.Arduino_Serial.close()
+
     def x_axis(self):
         self.ENA.Arduino_Serial.open()
         time.sleep(2)
@@ -1291,26 +1304,33 @@ class GUI(object):
             msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
             if msgbox == 'ok':
                 for i in range(num_measurements):
-                    self.rotation()  # Rotates turntable by angle specified
                     self.ENA.ChamberState = 'e'
                     self.x_axis()  # measures x direction
                     self.progress['value'] = 6.66  # incraments progress bar
                     self.VERLabelEntry.insert(0, str(DRM.XEFreq))
+                    self.VERLabelEntry.insert(0, " ")
                     self.VERLabelQEntry.insert(0, str(DRM.XEQ1))
+                    self.VERLabelQEntry.insert(0, " ")
                     DRM.empty_freq_x.append(DRM.XEFreq) # Adds each measurement to the list
                     DRM.empty1_q_x.append(DRM.XEQ1)
                     self.y_axis()  # measures y direction
                     self.progress['value'] = 6.66 * 2
                     self.HERLabelEntry.insert(0, str(DRM.YEFreq))
+                    self.HERLabelEntry.insert(0, " ")
                     self.HERLabelQEntry.insert(0, str(DRM.YEQ1))
+                    self.HERLabelQEntry.insert(0, " ")
                     DRM.empty_freq_y.append(DRM.YEFreq)  # Adds each measurement to the list
                     DRM.empty1_q_y.append(DRM.YEQ1)
                     self.z_axis()  # measures z direction
                     self.progress['value'] = 6.66 * 3
                     self.ZERLabelEntry.insert(0, str(DRM.ZEFreq))
+                    self.ZERLabelEntry.insert(0, " ")
                     self.ZERLabelQEntry.insert(0, str(DRM.ZEQ1))
+                    self.ZERLabelQEntry.insert(0, " ")
                     DRM.empty_freq_z.append(DRM.ZEFreq)  # Adds each measurement to the list
                     DRM.empty1_q_z.append(DRM.ZEQ1)
+                    self.rotation()  # Rotates turntable by angle specified
+            self.return_rotation() # Rotate turntable 180 degrees back to starting position
             print('\a')
             msgbox = messagebox.askyesno("Complete",
                                          "Retake measurements?")  # Asks for user input if read was okay.
@@ -1329,7 +1349,6 @@ class GUI(object):
             msgbox = messagebox.showwarning('WARNING', 'PLACE ORIGINAL IN CAVITY')
             if msgbox == 'ok':
                 for i in range(num_measurements):
-                    self.rotation()  # Rotates turntable by angle specified
                     self.ENA.ChamberState = 's'
                     self.x_axis()
                     self.progress['value'] = 6.66 * 4
@@ -1348,20 +1367,21 @@ class GUI(object):
 
                     # Put the average values in the GUI
                     self.VSRLabelEntry.insert(0, str(DRM.XSFreq))
+                    self.VSRLabelEntry.insert(0, " ")
                     self.VSRLabelQEntry.insert(0, str(DRM.XSQ))
+                    self.VSRLabelQEntry.insert(0, " ")
                     self.HSRLabelEntry.insert(0, str(DRM.YSFreq))
+                    self.HSRLabelEntry.insert(0, " ")
                     self.HSRLabelQEntry.insert(0, str(DRM.YSQ))
+                    self.HSRLabelQEntry.insert(0, " ")
                     self.ZSRLabelEntry.insert(0, str(DRM.ZSFreq))
+                    self.ZSRLabelEntry.insert(0, " ")
                     self.ZSRLabelQEntry.insert(0, str(DRM.ZSQ))
+                    self.ZSRLabelQEntry.insert(0, " ")
 
-                    s_average_freq_x = sum(DRM.sample_freq_x) / len(DRM.sample_freq_x)
-                    s_average_q_x = sum(DRM.sample_q_x) / len(DRM.sample_q_x)
-                    s_average_freq_y = sum(DRM.sample_freq_y) / len(DRM.sample_freq_y)
-                    s_average_q_y = sum(DRM.sample_q_y) / len(DRM.sample_q_y)
-                    s_average_freq_z = sum(DRM.sample_freq_z) / len(DRM.sample_freq_z)
-                    s_average_q_z = sum(DRM.sample_q_z) / len(DRM.sample_q_z)
+                    self.rotation()  # Rotates turntable by angle specified
 
-
+                self.return_rotation()  # Rotate turntable 180 degrees back to starting position
                 print('\a')
             msgbox = messagebox.askyesno("Complete",
                                          "Retake measurements?")  # Asks for user input if read was okay.
@@ -1380,12 +1400,13 @@ class GUI(object):
             msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
             if msgbox == 'ok':
                 for i in range(num_measurements):
-                    self.rotation()  # Rotates turntable by angle specified
                     self.ENA.ChamberState = 'e'
                     self.x_axis()
                     self.progress['value'] = 6.66 * 7
                     self.VERLabel1Entry.insert(0, str(DRM.XEFreq1))
+                    self.VERLabel1Entry.insert(0, " ")
                     self.VERLabel1QEntry.insert(0, str(DRM.XEQ2))
+                    self.VERLabel1QEntry.insert(0, " ")
                     DRM.empty1_freq_x.append(DRM.XEFreq1)  # Adds each measurement to the list
                     DRM.empty2_q_x.append(DRM.XEQ2)
                     self.y_axis()
@@ -1400,7 +1421,8 @@ class GUI(object):
                     self.ZERLabelQ1Entry.insert(0, str(DRM.ZEQ2))
                     DRM.empty1_freq_z.append(DRM.ZEFreq1)  # Adds each measurement to the list
                     DRM.empty2_q_z.append(DRM.ZEQ2)
-
+                    self.rotation()  # Rotates turntable by angle specified
+            self.return_rotation() # Rotate turntable 180 degrees back to starting position
             print('\a')
             msgbox = messagebox.askyesno("Complete",
                                          "Retake measurements?")  # Asks for user input if read was okay.
@@ -1419,7 +1441,6 @@ class GUI(object):
             msgbox = messagebox.showwarning('WARNING', 'PLACE REPLICA IN CAVITY')
             if msgbox == 'ok':
                 for i in range(num_measurements):
-                    self.rotation()  # Rotates turntable by angle specified
                     self.ENA.ChamberState = 'r'
                     self.x_axis()
                     self.progress['value'] = 6.66 * 10
@@ -1442,18 +1463,10 @@ class GUI(object):
                     self.HRRLabelQEntry.insert(0, str(DRM.YRQ))
                     self.ZRRLabelEntry.insert(0, str(DRM.ZRFreq))
                     self.ZRRLabelQEntry.insert(0, str(DRM.ZRQ))
+                    self.rotation()  # Rotates turntable by angle specified
 
-                    # Once the for loop has finished average each measurement.
-
-                    # Will need to do this for all the empty cavity measurements too, and make thier own lists
-
-                    r_average_freq_x = sum(DRM.replica_freq_x) / len(DRM.replica_freq_x)
-                    r_average_freq_y = sum(DRM.replica_freq_y) / len(DRM.replica_freq_y)
-                    r_average_freq_z = sum(DRM.replica_freq_z) / len(DRM.replica_freq_z)
-                    r_average_q_x = sum(DRM.replica_q_x) / len(DRM.replica_q_x)
-                    r_average_q_y = sum(DRM.replica_q_y) / len(DRM.replica_q_y)
-                    r_average_q_z = sum(DRM.replica_q_z) / len(DRM.replica_q_z)
-
+            self.return_rotation() # Rotate turntable 180 degrees back to starting position
+            print("\a")
             msgbox = messagebox.askyesno("Complete",
                                          "Retake measurements?")  # Asks for user input if read was okay.
             if msgbox == False:  # If measurements are good, continue
@@ -1470,7 +1483,6 @@ class GUI(object):
             msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
             if msgbox == 'ok':
                 for i in range(num_measurements):
-                    self.rotation()  # Rotates turntable by angle specified
                     self.ENA.ChamberState = 'e'
                     self.x_axis()
                     self.progress['value'] = 6.66 * 13
@@ -1490,6 +1502,8 @@ class GUI(object):
                     self.ZERLabelQEntry2.insert(0, str(DRM.ZEQ3))
                     DRM.empty2_freq_z.append(DRM.ZEFreq2)  # Adds each measurement to the list
                     DRM.empty3_q_z.append(DRM.ZEQ3)
+                    self.rotation()  # Rotates turntable by angle specified
+                self.return_rotation()  # Rotate turntable 180 degrees back to starting position
                 print("\a")
                 self.root.update_idletasks()
             msgbox = messagebox.askyesno("Complete",
@@ -1506,18 +1520,16 @@ class GUI(object):
                 self.ZERLabelQEntry2.delete(0, 'end')
 
         self.TempRead()
-        #DRM.calc(self.ENA)
-
         DRM.calc_all(self.ENA, num_measurements)
         self.progress['value'] = 100
-        self.DielectricResultEntry.insert(0, str(self.ENA.e_star1))
+        #self.DielectricResultEntry.insert(0, str(self.ENA.e_star1))
         self.TempLabelEntry.insert(0, str(self.ENA.temperature))
-        self.drm.vs1 = float(self.VS1LabelEntry.get())  # pass volume values, etc.
-        self.drm.vs2 = float(self.VS2LabelEntry.get())
-        DRM.permittvity_average_list.append(DRM.e_star1)
+        #self.drm.vs1 = float(self.VS1LabelEntry.get())  # pass volume values, etc.  This line doesn't work why?
+        #self.drm.vs2 = float(self.VS2LabelEntry.get())
+        #DRM.permittvity_average_list.append(DRM.e_star1) # What does this line do?
         self.DielectricResultEntry.insert(0, str(self.DRM.permittivity_average))
         print("Average permittivity:")
-        print(permittivity_average_list)
+        print(permittivity_average)
         self.root.mainloop()
 
     def show_info(self):
