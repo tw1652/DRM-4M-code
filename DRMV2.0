@@ -363,18 +363,13 @@ class DRM(object):
             # Add a delay to control the frequency of calculations
             time.sleep(10)  # Adjust the delay time as needed
 
-    def calc_all(self):
+    def calc_all(self, num_measurements):
         permittivities = []
 
         # volume of cavity
         vc = 0.149 * 0.141 * 0.169
         self.vs1 = (self.vs1) * 0.000001  # m^3 from geometry
         self.vs2 = (self.vs2) * 0.000001  # m^3
-
-        '''num_rotations = int(self.RLabelEntry.get())
-        num_measurements = num_rotations
-        if num_rotations == 0:
-            num_measurements = 1'''
 
         for i in range(num_measurements):
             # measured resonant frequency (MHz) and Q-factor, empty, x, 1, before
@@ -570,6 +565,8 @@ class DRM(object):
             # loss tangent of material 1 (original)
             self.tand = -np.imag(self.e_star1) / np.real(self.e_star1)
 
+            permittivities.append(self.e_star1)
+
             # Add a delay to control the frequency of calculations
             time.sleep(10)  # Adjust the delay time as needed
 
@@ -577,7 +574,6 @@ class DRM(object):
 class GUI(object):
 
     def __init__(self):  # Initialise the GUI
-
         self.root = Tk()
         self.status = '0'
         self.rm = pyvisa.ResourceManager()
@@ -1291,7 +1287,6 @@ class GUI(object):
         if num_rotations == 0:
             num_measurements = 1
 
-
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
             if msgbox == 'ok':
@@ -1511,12 +1506,14 @@ class GUI(object):
                 self.ZERLabelQEntry2.delete(0, 'end')
 
         self.TempRead()
-        DRM.calc(self.ENA)
-        DRM.calc_all(self.ENA)
+        #DRM.calc(self.ENA)
+
+        DRM.calc_all(self.ENA, num_measurements)
         self.progress['value'] = 100
         self.DielectricResultEntry.insert(0, str(self.ENA.e_star1))
         self.TempLabelEntry.insert(0, str(self.ENA.temperature))
-
+        self.drm.vs1 = float(self.VS1LabelEntry.get())  # pass volume values, etc.
+        self.drm.vs2 = float(self.VS2LabelEntry.get())
         DRM.permittvity_average_list.append(DRM.e_star1)
         self.DielectricResultEntry.insert(0, str(self.DRM.permittivity_average))
         print("Average permittivity:")
