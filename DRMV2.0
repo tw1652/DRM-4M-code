@@ -371,10 +371,16 @@ class DRM(object):
         self.vs2 = (self.vs2) * 0.000001  # m^3
 
         for i in range(num_measurements):
+            print("Run number:")
+            print(i)
             # measured resonant frequency (MHz) and Q-factor, empty, x, 1, before
             f0_x1_before = DRM.empty_freq_x[i] # Lists start a zero, so there may be some problem with how it
             # works with i and num_measurements being set to one on zero, maybe new variable? or is i fine?
             Q0_x1_before = DRM.empty1_q_x[i]
+
+            print("Measured Resonant frequency")
+            print("f0_x1_before:")
+            print(f0_x1_before)
 
             # measured resonant frequency (MHz) and Q-factor, empty, y, 1, before
             f0_y1_before = DRM.empty_freq_y[i]
@@ -414,7 +420,8 @@ class DRM(object):
 
             # 'after' for sample 1 is 'before' for sample 2
             # resonant frequency (MHz) and Q-factor, empty, x, 2, before
-            f0_x2_before = f0_x1_after # no clue wtf this stage is, don't think it needs changing?
+            # This is all for measuring drift.
+            f0_x2_before = f0_x1_after
             Q0_x2_before = Q0_x1_after
 
             # resonant frequency (MHz) and Q-factor, empty, y, 2, before
@@ -455,27 +462,28 @@ class DRM(object):
 
             # TIMING
 
+            print(self.MeasurementTime[6])
+
             # weights for f0 and Q0 measured before and after sample 1
-            w_x1_before = (self.MeasurementTime[6] - self.MeasurementTime[3]) / (
-                    self.MeasurementTime[6] - self.MeasurementTime[0])
-            w_x1_after = (self.MeasurementTime[3] - self.MeasurementTime[0]) / (
-                    self.MeasurementTime[6] - self.MeasurementTime[0])
+            w_x1_before = (self.MeasurementTime[6+i] - self.MeasurementTime[3+i]) / (
+                    self.MeasurementTime[6+i] - self.MeasurementTime[0+i])
+            w_x1_after = (self.MeasurementTime[3+i] - self.MeasurementTime[0+i]) / (
+                    self.MeasurementTime[6+i] - self.MeasurementTime[0+i])
 
             w_y1_before = (self.MeasurementTime[7] - self.MeasurementTime[4]) / (
                     self.MeasurementTime[7] - self.MeasurementTime[1])
             w_y1_after = (self.MeasurementTime[4] - self.MeasurementTime[1]) / (
                     self.MeasurementTime[7] - self.MeasurementTime[1])
-
             w_z1_before = (self.MeasurementTime[8] - self.MeasurementTime[5]) / (
                     self.MeasurementTime[8] - self.MeasurementTime[2])
             w_z1_after = (self.MeasurementTime[5] - self.MeasurementTime[2]) / (
                     self.MeasurementTime[8] - self.MeasurementTime[2])
 
             # weights for f0 and Q0 measured before and after sample 2
-            w_x2_before = (self.MeasurementTime[12] - self.MeasurementTime[9]) / (
-                    self.MeasurementTime[12] - self.MeasurementTime[6])
-            w_x2_after = (self.MeasurementTime[9] - self.MeasurementTime[6]) / (
-                    self.MeasurementTime[12] - self.MeasurementTime[6])
+            w_x2_before = (self.MeasurementTime[12+i] - self.MeasurementTime[9+i]) / (
+                    self.MeasurementTime[12+i] - self.MeasurementTime[6+i])
+            w_x2_after = (self.MeasurementTime[9+i] - self.MeasurementTime[6+i]) / (
+                    self.MeasurementTime[12+i] - self.MeasurementTime[6+i])
 
             w_y2_before = (self.MeasurementTime[13] - self.MeasurementTime[10]) / (
                     self.MeasurementTime[13] - self.MeasurementTime[7])
@@ -486,6 +494,7 @@ class DRM(object):
                     self.MeasurementTime[14] - self.MeasurementTime[8])
             w_z2_after = (self.MeasurementTime[11] - self.MeasurementTime[8]) / (
                     self.MeasurementTime[14] - self.MeasurementTime[8])
+
 
             # EMPTY 1 WEIGHTED AVERAGE
 
@@ -520,6 +529,13 @@ class DRM(object):
             # mean of 'before' and 'after'
             f0_z2 = w_z2_before * f0_z2_before + w_z2_after * f0_z2_after
             Q0_z2 = w_z2_before * Q0_z2_before + w_z2_after * Q0_z2_after
+
+            print("w_x1_before and after:") #should be ~0.5
+            print(w_x1_before)
+            print(w_x1_after)
+            print("empty weighted 2 averages:")
+            print(f0_x2)
+            print(Q0_x2)
 
             # CALCULATE COMPLEX PERMITTIVITY
 
@@ -1113,40 +1129,40 @@ class GUI(object):
         print("x")
         print(self.results)
         time.sleep(5)
-        if self.ENA.ChamberState == 'e':
 
+        if self.ENA.ChamberState == 'e':
             #Empty 1
             if self.ENA.MeasurementNum == 0:
                 peak_dataX = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.XEFreq = peak_dataX[1]/1000000
                 DRM.XEQ1 = peak_dataX[2]
-                self.ENA.MeasurementTime[0] = time.time()
+                self.ENA.MeasurementTime[0+measurement] = time.time()
             #Empty 2
             elif self.ENA.MeasurementNum == 1:
                 peak_dataX1 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.XEFreq1 = peak_dataX1[1]/1000000
                 DRM.XEQ2 = peak_dataX1[2]
-                self.ENA.MeasurementTime[6] = time.time()
+                self.ENA.MeasurementTime[6+measurement] = time.time()
             #Empty 3
             elif self.ENA.MeasurementNum == 2:
                 peak_dataX2 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.XEFreq2 = peak_dataX2[1]/1000000
                 DRM.XEQ3 = peak_dataX2[2]
-                self.ENA.MeasurementTime[12] = time.time()
+                self.ENA.MeasurementTime[12+measurement] = time.time()
 
         #REPLICA
         elif self.ENA.ChamberState == 'r':
             peak_dataXR = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
             DRM.XRFreq = peak_dataXR[1]/1000000
             DRM.XRQ = peak_dataXR[2]
-            self.ENA.MeasurementTime[9] = time.time()
+            self.ENA.MeasurementTime[9+measurement] = time.time()
 
         #SPECIMEN
         elif self.ENA.ChamberState == 's':
             peak_dataXS = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
             DRM.XSFreq = peak_dataXS[1]/1000000
             DRM.XSQ = peak_dataXS[2]
-            self.ENA.MeasurementTime[3] = time.time()
+            self.ENA.MeasurementTime[3+measurement] = time.time()
 
     def y_axis(self):
         self.ENA.Arduino_Serial.open()
@@ -1299,11 +1315,13 @@ class GUI(object):
         num_measurements = num_rotations
         if num_rotations == 0:
             num_measurements = 1
+        global measurement
 
         while True:  # this loop allows for human error with handling the machine. applied to every section
             msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
             if msgbox == 'ok':
                 for i in range(num_measurements):
+                    measurement = i
                     self.ENA.ChamberState = 'e'
                     self.x_axis()  # measures x direction
                     self.progress['value'] = 6.66  # incraments progress bar
@@ -1350,6 +1368,7 @@ class GUI(object):
             msgbox = messagebox.showwarning('WARNING', 'PLACE ORIGINAL IN CAVITY')
             if msgbox == 'ok':
                 for i in range(num_measurements):
+                    measurement = i
                     self.ENA.ChamberState = 's'
                     self.x_axis()
                     self.progress['value'] = 6.66 * 4
@@ -1402,6 +1421,7 @@ class GUI(object):
             msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
             if msgbox == 'ok':
                 for i in range(num_measurements):
+                    measurement = i
                     self.ENA.ChamberState = 'e'
                     self.x_axis()
                     self.progress['value'] = 6.66 * 7
@@ -1444,6 +1464,7 @@ class GUI(object):
             msgbox = messagebox.showwarning('WARNING', 'PLACE REPLICA IN CAVITY')
             if msgbox == 'ok':
                 for i in range(num_measurements):
+                    measurement = i
                     self.ENA.ChamberState = 'r'
                     self.x_axis()
                     self.progress['value'] = 6.66 * 10
@@ -1487,6 +1508,7 @@ class GUI(object):
             msgbox = messagebox.showwarning('WARNING', 'EMPTY CAVITY')
             if msgbox == 'ok':
                 for i in range(num_measurements):
+                    measurement = i
                     self.ENA.ChamberState = 'e'
                     self.x_axis()
                     self.progress['value'] = 6.66 * 13
