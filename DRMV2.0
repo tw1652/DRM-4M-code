@@ -928,7 +928,7 @@ class GUI(object):
         # R - Number of degrees to rotate sample and replica
         self.RFrame = Frame(self.tab1, borderwidth=10)
         self.RFrame.pack(side=TOP, anchor=W, fill="x")
-        self.RLabel = Label(self.RFrame, text="Number of rotations of the turntable")
+        self.RLabel = Label(self.RFrame, text="Number of measurements")
         self.RLabel.pack(side=TOP, anchor=W)
         self.RLabelTxt = IntVar()
         self.RLabelEntry = Entry(self.RFrame, textvariable=self.RLabelTxt, width=25)
@@ -1055,7 +1055,7 @@ class GUI(object):
         elif num_rotations == 1:
             num_rotations = 2
 
-        rotation = int(180/num_rotations)  # get value of degrees entered
+        rotation = int(180/(num_rotations-1))
         self.mode = 4  # Corresponds to mode 4, which is to rotate the sample
         message = f"{self.mode} {int(rotation)}\n"  # Format is self.mode, degrees
         self.ENA.Arduino_Serial.write(message.encode('utf-8'))  # sends over "self.mode" via serial
@@ -1329,7 +1329,8 @@ class GUI(object):
                     self.ZERLabelQEntry.insert(0, " ")
                     DRM.empty_freq_z.append(DRM.ZEFreq)  # Adds each measurement to the list
                     DRM.empty1_q_z.append(DRM.ZEQ1)
-                    self.rotation()  # Rotates turntable by angle specified
+                    if i < num_measurements-1:
+                        self.rotation()  # Rotates turntable by angle specified
             self.return_rotation() # Rotate turntable 180 degrees back to starting position
             print('\a')
             msgbox = messagebox.askyesno("Complete",
@@ -1379,7 +1380,8 @@ class GUI(object):
                     self.ZSRLabelQEntry.insert(0, str(DRM.ZSQ))
                     self.ZSRLabelQEntry.insert(0, " ")
 
-                    self.rotation()  # Rotates turntable by angle specified
+                    if i < num_measurements-1:
+                        self.rotation()  # Rotates turntable by angle specified
 
                 self.return_rotation()  # Rotate turntable 180 degrees back to starting position
                 print('\a')
@@ -1421,7 +1423,8 @@ class GUI(object):
                     self.ZERLabelQ1Entry.insert(0, str(DRM.ZEQ2))
                     DRM.empty1_freq_z.append(DRM.ZEFreq1)  # Adds each measurement to the list
                     DRM.empty2_q_z.append(DRM.ZEQ2)
-                    self.rotation()  # Rotates turntable by angle specified
+                    if i < num_measurements-1:
+                        self.rotation()  # Rotates turntable by angle specified
             self.return_rotation() # Rotate turntable 180 degrees back to starting position
             print('\a')
             msgbox = messagebox.askyesno("Complete",
@@ -1463,7 +1466,8 @@ class GUI(object):
                     self.HRRLabelQEntry.insert(0, str(DRM.YRQ))
                     self.ZRRLabelEntry.insert(0, str(DRM.ZRFreq))
                     self.ZRRLabelQEntry.insert(0, str(DRM.ZRQ))
-                    self.rotation()  # Rotates turntable by angle specified
+                    if i < num_measurements-1:
+                        self.rotation()  # Rotates turntable by angle specified
 
             self.return_rotation() # Rotate turntable 180 degrees back to starting position
             print("\a")
@@ -1502,7 +1506,8 @@ class GUI(object):
                     self.ZERLabelQEntry2.insert(0, str(DRM.ZEQ3))
                     DRM.empty2_freq_z.append(DRM.ZEFreq2)  # Adds each measurement to the list
                     DRM.empty3_q_z.append(DRM.ZEQ3)
-                    self.rotation()  # Rotates turntable by angle specified
+                    if i < num_measurements-1:
+                        self.rotation()  # Rotates turntable by angle specified
                 self.return_rotation()  # Rotate turntable 180 degrees back to starting position
                 print("\a")
                 self.root.update_idletasks()
@@ -1524,9 +1529,8 @@ class GUI(object):
         self.progress['value'] = 100
         #self.DielectricResultEntry.insert(0, str(self.ENA.e_star1))
         self.TempLabelEntry.insert(0, str(self.ENA.temperature))
-        #self.drm.vs1 = float(self.VS1LabelEntry.get())  # pass volume values, etc.  This line doesn't work why?
-        #self.drm.vs2 = float(self.VS2LabelEntry.get())
-        #DRM.permittvity_average_list.append(DRM.e_star1) # What does this line do?
+        self.vs1 = float(self.VS1LabelEntry.get())  # pass volume values, etc.  This line doesn't work why?
+        self.vs2 = float(self.VS2LabelEntry.get())
         self.DielectricResultEntry.insert(0, str(DRM.permittivity_average))
         print("Average permittivity:")
         print(DRM.permittivity_average)
@@ -1650,7 +1654,7 @@ class GUI(object):
         fh.write("ALPHA1 VOL: %s\n" % self.ENA.alpha1_vol)
         fh.write("ALPHA2 VOL: %s\n" % self.ENA.alpha2_vol)
         fh.write("ALPHA1: %s\n" % self.ENA.alpha1)
-        fh.write("PERMITTIVITYS OF SAMPLE: %s\n" % DRM.permittivity_average_list)
+        fh.write("PERMITTIVITIES OF SAMPLE: %s\n" % DRM.permittivities)
         fh.write("PERMITTIVITY OF SAMPLE %s\n" % DRM.permittivity_average)
         fh.write("LOSS TANGENT OF MATERIAL: %s\n" % self.ENA.tand)
         fh.write("COMMENTS: %s\n" % self.CommentBox.get("1.0", END))
