@@ -156,212 +156,6 @@ class DRM(object):
 
         self.e_star2.set('0.0000')
 
-    def calc(self):
-        # volume of cavity
-        vc = 0.149 * 0.141 * 0.169
-        self.vs1 = (self.vs1) * 0.000001  # m^3 from geometry
-        self.vs2 = (self.vs2) * 0.000001  # m^3
-
-        num_rotations = int(GUI.RLabelEntry.get())
-        num_measurements = num_rotations
-        if num_rotations == 0:
-            num_measurements = 1
-
-        for i in range(num_measurements):
-            f0_x1_before = DRM.XEFreq
-            Q0_x1_before = DRM.XEQ1
-
-            # measured resonant frequency (MHz) and Q-factor, empty, y, 1, before
-            f0_y1_before = DRM.YEFreq
-            Q0_y1_before = DRM.YEQ1
-
-            # measured resonant frequency (MHz) and Q-factor, empty, z, 1, before
-            f0_z1_before = DRM.ZEFreq
-            Q0_z1_before = DRM.ZEQ1
-
-            # SPECIMEN 1 (ORIGINAL)
-
-            # measured resonant frequency (MHz) and Q-factor, sample 1, x
-            f_x1 = DRM.XSFreq
-            Q_x1 = DRM.XSQ
-
-            # measured resonant frequency (MHz) and Q-factor, sample 1, y
-            f_y1 = DRM.YSFreq
-            Q_y1 = DRM.YSQ
-
-            # measured resonant frequency (MHz) and Q-factor, sample 1, z
-            f_z1 = DRM.ZSFreq
-            Q_z1 = DRM.ZSQ
-
-            # EMPTY (IN BETWEEN SAMPLES 1 AND 2)
-
-            # measured resonant frequency (MHz) and Q-factor, empty, x, 1, after
-            f0_x1_after = DRM.XEFreq1
-            Q0_x1_after = DRM.XEQ2
-
-            # measured resonant frequency (MHz) and Q-factor, empty, y, 1, after
-            f0_y1_after = DRM.YEFreq1
-            Q0_y1_after = DRM.YEQ2
-
-            # measured resonant frequency (MHz) and Q-factor, empty, z, 1, after
-            f0_z1_after = DRM.ZEFreq1
-            Q0_z1_after = DRM.ZEQ2
-
-            # 'after' for sample 1 is 'before' for sample 2
-            # resonant frequency (MHz) and Q-factor, empty, x, 2, before
-            f0_x2_before = f0_x1_after
-            Q0_x2_before = Q0_x1_after
-
-            # resonant frequency (MHz) and Q-factor, empty, y, 2, before
-            f0_y2_before = f0_y1_after
-            Q0_y2_before = Q0_y1_after
-
-            # resonant frequency (MHz) and Q-factor, empty, z, 2, before
-            f0_z2_before = f0_z1_after
-            Q0_z2_before = Q0_z1_after
-
-            # SAMPLE 2 (REPLICA)
-
-            # measured resonant frequency (MHz) and Q-factor, sample 2, x
-            f_x2 = DRM.XRFreq
-            Q_x2 = DRM.XRQ
-
-            # measured resonant frequency (MHz) and Q-factor, sample 2, y
-            f_y2 = DRM.YRFreq
-            Q_y2 = DRM.YRQ
-
-            # measured resonant frequency (MHz) and Q-factor, sample 2, z
-            f_z2 = DRM.ZRFreq
-            Q_z2 = DRM.ZRQ
-
-            # EMPTY (AT END)
-
-            # measured resonant frequency (MHz) and Q-factor, empty, x, 2, after
-            f0_x2_after = DRM.XEFreq2
-            Q0_x2_after = DRM.XEQ3
-
-            # measured resonant frequency (MHz) and Q-factor, empty, y, 2, after
-            f0_y2_after = DRM.YEFreq2
-            Q0_y2_after = DRM.YEQ3
-
-            # measured resonant frequency (MHz) and Q-factor, empty, z, 2, after
-            f0_z2_after = DRM.ZEFreq2
-            Q0_z2_after = DRM.ZEQ3
-
-            # TIMING
-
-            # weights for f0 and Q0 measured before and after sample 1
-            w_x1_before = (self.MeasurementTime[6] - self.MeasurementTime[3]) / (
-                    self.MeasurementTime[6] - self.MeasurementTime[0])
-            w_x1_after = (self.MeasurementTime[3] - self.MeasurementTime[0]) / (
-                    self.MeasurementTime[6] - self.MeasurementTime[0])
-
-            w_y1_before = (self.MeasurementTime[7] - self.MeasurementTime[4]) / (
-                    self.MeasurementTime[7] - self.MeasurementTime[1])
-            w_y1_after = (self.MeasurementTime[4] - self.MeasurementTime[1]) / (
-                    self.MeasurementTime[7] - self.MeasurementTime[1])
-
-            w_z1_before = (self.MeasurementTime[8] - self.MeasurementTime[5]) / (
-                    self.MeasurementTime[8] - self.MeasurementTime[2])
-            w_z1_after = (self.MeasurementTime[5] - self.MeasurementTime[2]) / (
-                    self.MeasurementTime[8] - self.MeasurementTime[2])
-
-            # weights for f0 and Q0 measured before and after sample 2
-            w_x2_before = (self.MeasurementTime[12] - self.MeasurementTime[9]) / (
-                    self.MeasurementTime[12] - self.MeasurementTime[6])
-            w_x2_after = (self.MeasurementTime[9] - self.MeasurementTime[6]) / (
-                    self.MeasurementTime[12] - self.MeasurementTime[6])
-
-            w_y2_before = (self.MeasurementTime[13] - self.MeasurementTime[10]) / (
-                    self.MeasurementTime[13] - self.MeasurementTime[7])
-            w_y2_after = (self.MeasurementTime[10] - self.MeasurementTime[7]) / (
-                    self.MeasurementTime[13] - self.MeasurementTime[7])
-
-            w_z2_before = (self.MeasurementTime[14] - self.MeasurementTime[11]) / (
-                    self.MeasurementTime[14] - self.MeasurementTime[8])
-            w_z2_after = (self.MeasurementTime[11] - self.MeasurementTime[8]) / (
-                    self.MeasurementTime[14] - self.MeasurementTime[8])
-
-            # EMPTY 1 WEIGHTED AVERAGE
-
-            # measured resonant frequency (MHz) and Q-factor, empty, x, 1
-            # mean of 'before' and 'after'
-            f0_x1 = w_x1_before * f0_x1_before + w_x1_after * f0_x1_after
-            Q0_x1 = w_x1_before * Q0_x1_before + w_x1_after * Q0_x1_after
-
-            # measured resonant frequency (MHz) and Q-factor, empty, y, 1
-            # mean of 'before' and 'after'
-            f0_y1 = w_y1_before * f0_y1_before + w_y1_after * f0_y1_after
-            Q0_y1 = w_y1_before * Q0_y1_before + w_y1_after * Q0_y1_after
-
-            # measured resonant frequency (MHz) and Q-factor, empty, z, 1
-            # mean of 'before' and 'after'
-            f0_z1 = w_z1_before * f0_z1_before + w_z1_after * f0_z1_after
-            Q0_z1 = w_z1_before * Q0_z1_before + w_z1_after * Q0_z1_after
-
-            # EMPTY 2 WEIGHTED AVERAGE
-
-            # measured resonant frequency (MHz) and Q-factor, empty, x, 2
-            # mean of 'before' and 'after'
-            f0_x2 = w_x2_before * f0_x2_before + w_x2_after * f0_x2_after
-            Q0_x2 = w_x2_before * Q0_x2_before + w_x2_after * Q0_x2_after
-
-            # measured resonant frequency (MHz) and Q-factor, empty, y, 2
-            # mean of 'before' and 'after'
-            f0_y2 = w_y2_before * f0_y2_before + w_y2_after * f0_y2_after
-            Q0_y2 = w_y2_before * Q0_y2_before + w_y2_after * Q0_y2_after
-
-            # measured resonant frequency (MHz) and Q-factor, empty, z, 2
-            # mean of 'before' and 'after'
-            f0_z2 = w_z2_before * f0_z2_before + w_z2_after * f0_z2_after
-            Q0_z2 = w_z2_before * Q0_z2_before + w_z2_after * Q0_z2_after
-
-            # CALCULATE COMPLEX PERMITTIVITY
-
-            # shifts in complex frequency
-            self.deltaOmega_x1 = (f_x1 - f0_x1) / f0_x1 + 0.5 * 1j * (1. / Q_x1 - 1. / Q0_x1)
-            self.deltaOmega_y1 = (f_y1 - f0_y1) / f0_y1 + 0.5 * 1j * (1. / Q_y1 - 1. / Q0_y1)
-            self.deltaOmega_z1 = (f_z1 - f0_z1) / f0_z1 + 0.5 * 1j * (1. / Q_z1 - 1. / Q0_z1)
-
-            self.sig_r_omega1 = 1. / self.deltaOmega_x1 + 1. / self.deltaOmega_y1 + 1. / self.deltaOmega_z1
-
-            # or measured data (comment out if using previous data)
-            self.deltaOmega_x2 = (f_x2 - f0_x2) / f0_x2 + 0.5 * 1j * (1. / Q_x2 - 1. / Q0_x2)
-            self.deltaOmega_y2 = (f_y2 - f0_y2) / f0_y2 + 0.5 * 1j * (1. / Q_y2 - 1. / Q0_y2)
-            self.deltaOmega_z2 = (f_z2 - f0_z2) / f0_z2 + 0.5 * 1j * (1. / Q_z2 - 1. / Q0_z2)
-
-            self.sig_r_omega2 = 1. / self.deltaOmega_x2 + 1. / self.deltaOmega_y2 + 1. / self.deltaOmega_z2
-
-            # Clausius-Mosotti factor for material 2 (replica)
-            self.alpha2 = (self.e_star2 - 1) / (self.e_star2 + 2)
-
-            # new analysis, quadratic fit
-
-            p = [-0.056155651313900 + 0.000580840419927j,
-                 -0.468920921941625 + 0.000960280535180j,
-                 0.0000 + 0.0000j]
-
-            # permittivity estimates from volume only
-            self.alpha1_vol = np.polyval(p, vc / (self.vs1 * self.sig_r_omega1))
-            self.e_star1_vol = (1 + 2 * self.alpha1_vol) / (1 - self.alpha1_vol)
-            self.alpha2_vol = np.polyval(p, vc / (self.vs2 * self.sig_r_omega2))
-            self.e_star2_vol = (1 + 2 * self.alpha2_vol) / (1 - self.alpha2_vol)
-
-            # Clausius-Mosotti factor for material 1 (original)
-
-            self.alpha1 = self.alpha2 * np.polyval(p, vc / (self.vs1 * self.sig_r_omega1)) / np.polyval(p, vc / (
-                    self.vs2 * self.sig_r_omega2))
-
-            # permittivity of material 1 (SPECIMEN)
-            self.e_star1 = (1 + (2 * self.alpha1)) / (1 - self.alpha1)
-            print(self.e_star1)
-
-            # loss tangent of material 1 (original)
-            self.tand = -np.imag(self.e_star1) / np.real(self.e_star1)
-
-            # Add a delay to control the frequency of calculations
-            time.sleep(10)  # Adjust the delay time as needed
-
     def calc_all(self, num_measurements):
         permittivities = []
 
@@ -461,39 +255,41 @@ class DRM(object):
             Q0_z2_after = DRM.empty3_q_z[i]
 
             # TIMING
-
-            print(self.MeasurementTime[6])
+            print("Measurement")
+            print(measurement)
+            print("first x measurement")
+            print(self.MeasurementTime[6+measurement])
 
             # weights for f0 and Q0 measured before and after sample 1
-            w_x1_before = (self.MeasurementTime[6+i] - self.MeasurementTime[3+i]) / (
-                    self.MeasurementTime[6+i] - self.MeasurementTime[0+i])
-            w_x1_after = (self.MeasurementTime[3+i] - self.MeasurementTime[0+i]) / (
-                    self.MeasurementTime[6+i] - self.MeasurementTime[0+i])
+            w_x1_before = (self.MeasurementTime[6+measurement] - self.MeasurementTime[3+measurement]) / (
+                    self.MeasurementTime[6+measurement] - self.MeasurementTime[0+measurement])
+            w_x1_after = (self.MeasurementTime[3+measurement] - self.MeasurementTime[0+measurement]) / (
+                    self.MeasurementTime[6+measurement] - self.MeasurementTime[0+measurement])
 
-            w_y1_before = (self.MeasurementTime[7] - self.MeasurementTime[4]) / (
-                    self.MeasurementTime[7] - self.MeasurementTime[1])
-            w_y1_after = (self.MeasurementTime[4] - self.MeasurementTime[1]) / (
-                    self.MeasurementTime[7] - self.MeasurementTime[1])
-            w_z1_before = (self.MeasurementTime[8] - self.MeasurementTime[5]) / (
-                    self.MeasurementTime[8] - self.MeasurementTime[2])
-            w_z1_after = (self.MeasurementTime[5] - self.MeasurementTime[2]) / (
-                    self.MeasurementTime[8] - self.MeasurementTime[2])
+            w_y1_before = (self.MeasurementTime[7+measurement] - self.MeasurementTime[4+measurement]) / (
+                    self.MeasurementTime[7+measurement] - self.MeasurementTime[1+measurement])
+            w_y1_after = (self.MeasurementTime[4+measurement] - self.MeasurementTime[1+measurement]) / (
+                    self.MeasurementTime[7+measurement] - self.MeasurementTime[1+measurement])
+            w_z1_before = (self.MeasurementTime[8+measurement] - self.MeasurementTime[5+measurement]) / (
+                    self.MeasurementTime[8+measurement] - self.MeasurementTime[2+measurement])
+            w_z1_after = (self.MeasurementTime[5+measurement] - self.MeasurementTime[2+measurement]) / (
+                    self.MeasurementTime[8+measurement] - self.MeasurementTime[2+measurement])
 
             # weights for f0 and Q0 measured before and after sample 2
-            w_x2_before = (self.MeasurementTime[12+i] - self.MeasurementTime[9+i]) / (
-                    self.MeasurementTime[12+i] - self.MeasurementTime[6+i])
-            w_x2_after = (self.MeasurementTime[9+i] - self.MeasurementTime[6+i]) / (
-                    self.MeasurementTime[12+i] - self.MeasurementTime[6+i])
+            w_x2_before = (self.MeasurementTime[12+measurement] - self.MeasurementTime[9+measurement]) / (
+                    self.MeasurementTime[12+measurement] - self.MeasurementTime[6+measurement])
+            w_x2_after = (self.MeasurementTime[9+measurement] - self.MeasurementTime[6+measurement]) / (
+                    self.MeasurementTime[12+measurement] - self.MeasurementTime[6+measurement])
 
-            w_y2_before = (self.MeasurementTime[13] - self.MeasurementTime[10]) / (
-                    self.MeasurementTime[13] - self.MeasurementTime[7])
-            w_y2_after = (self.MeasurementTime[10] - self.MeasurementTime[7]) / (
-                    self.MeasurementTime[13] - self.MeasurementTime[7])
+            w_y2_before = (self.MeasurementTime[13+measurement] - self.MeasurementTime[10+measurement]) / (
+                    self.MeasurementTime[13+measurement] - self.MeasurementTime[7+measurement])
+            w_y2_after = (self.MeasurementTime[10+measurement] - self.MeasurementTime[7+measurement]) / (
+                    self.MeasurementTime[13+measurement] - self.MeasurementTime[7+measurement])
 
-            w_z2_before = (self.MeasurementTime[14] - self.MeasurementTime[11]) / (
-                    self.MeasurementTime[14] - self.MeasurementTime[8])
-            w_z2_after = (self.MeasurementTime[11] - self.MeasurementTime[8]) / (
-                    self.MeasurementTime[14] - self.MeasurementTime[8])
+            w_z2_before = (self.MeasurementTime[14+measurement] - self.MeasurementTime[11+measurement]) / (
+                    self.MeasurementTime[14+measurement] - self.MeasurementTime[8+measurement])
+            w_z2_after = (self.MeasurementTime[11+measurement] - self.MeasurementTime[8+measurement]) / (
+                    self.MeasurementTime[14+measurement] - self.MeasurementTime[8+measurement])
 
 
             # EMPTY 1 WEIGHTED AVERAGE
@@ -598,7 +394,7 @@ class GUI(object):
         self.ENA.Arduino_Serial.close()
         self.ENA.MeasurementNum = 0
         self.ENA.ChamberState = 'e'
-        self.ENA.MeasurementTime = [None] * 15
+        self.ENA.MeasurementTime = [None] * 90
         self.filename = ""
         self.master = self.root
         self.headingFont = 'Helvetica'
@@ -1137,6 +933,8 @@ class GUI(object):
                 DRM.XEFreq = peak_dataX[1]/1000000
                 DRM.XEQ1 = peak_dataX[2]
                 self.ENA.MeasurementTime[0+measurement] = time.time()
+                print("Measurement time from x:")
+                print(self.ENA.MeasurementTime[0+measurement])
             #Empty 2
             elif self.ENA.MeasurementNum == 1:
                 peak_dataX1 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
@@ -1191,35 +989,35 @@ class GUI(object):
                 peak_dataY = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.YEFreq = peak_dataY[1] / 1000000
                 DRM.YEQ1 = peak_dataY[2]
-                self.ENA.MeasurementTime[1] = time.time()
+                self.ENA.MeasurementTime[1+measurement] = time.time()
 
             # Empty 2
             if self.ENA.MeasurementNum == 1:
                 peak_dataY1 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.YEFreq1 = peak_dataY1[1] / 1000000
                 DRM.YEQ2 = peak_dataY1[2]
-                self.ENA.MeasurementTime[7] = time.time()
+                self.ENA.MeasurementTime[7+measurement] = time.time()
 
             # Empty 3
             elif self.ENA.MeasurementNum == 2:
                 peak_dataY2 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.YEFreq2 = peak_dataY2[1] / 1000000
                 DRM.YEQ3 = peak_dataY2[2]
-                self.ENA.MeasurementTime[13] = time.time()
+                self.ENA.MeasurementTime[13+measurement] = time.time()
 
         # REPLICA
         if self.ENA.ChamberState == 'r':
             peak_dataYR = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
             DRM.YRFreq = peak_dataYR[1] / 1000000
             DRM.YRQ = peak_dataYR[2]
-            self.ENA.MeasurementTime[10] = time.time()
+            self.ENA.MeasurementTime[10+measurement] = time.time()
 
         # SPECIMEN
         elif self.ENA.ChamberState == 's':
             peak_dataYS = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
             DRM.YSFreq = peak_dataYS[1] / 1000000
             DRM.YSQ = peak_dataYS[2]
-            self.ENA.MeasurementTime[4] = time.time()
+            self.ENA.MeasurementTime[4+measurement] = time.time()
 
     def z_axis(self):
         self.ENA.Arduino_Serial.open()
@@ -1249,21 +1047,21 @@ class GUI(object):
                 peak_dataZ = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.ZEFreq = peak_dataZ[1] / 1000000
                 DRM.ZEQ1 = peak_dataZ[2]
-                self.ENA.MeasurementTime[2] = time.time()
+                self.ENA.MeasurementTime[2+measurement] = time.time()
 
             # Empty 2
             elif self.ENA.MeasurementNum == 1:
                 peak_dataZ1 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.ZEFreq1 = peak_dataZ1[1] / 1000000
                 DRM.ZEQ2 = peak_dataZ1[2]
-                self.ENA.MeasurementTime[8] = time.time()
+                self.ENA.MeasurementTime[8+measurement] = time.time()
 
             # Empty 3
             elif self.ENA.MeasurementNum == 2:
                 peak_dataZ2 = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
                 DRM.ZEFreq2 = peak_dataZ2[1] / 1000000
                 DRM.ZEQ3 = peak_dataZ2[2]
-                self.ENA.MeasurementTime[14] = time.time()
+                self.ENA.MeasurementTime[14+measurement] = time.time()
 
             self.ENA.MeasurementNum += 1
 
@@ -1272,14 +1070,14 @@ class GUI(object):
             peak_dataZR = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
             DRM.ZRFreq = peak_dataZR[1] / 1000000
             DRM.ZRQ = peak_dataZR[2]
-            self.ENA.MeasurementTime[11] = time.time()
+            self.ENA.MeasurementTime[11+measurement] = time.time()
 
         # SPECIMEN
         elif self.ENA.ChamberState == 's':
             peak_dataZS = self.ENA.query_ascii_values(':CALCulate:MARKer:FUNCtion:RESult?')
             DRM.ZSFreq = peak_dataZS[1] / 1000000
             DRM.ZSQ = peak_dataZS[2]
-            self.ENA.MeasurementTime[5] = time.time()
+            self.ENA.MeasurementTime[5+measurement] = time.time()
 
     def TempRead(self):
         while True:  ## Loop continues until one of the predetermined ends is reached
