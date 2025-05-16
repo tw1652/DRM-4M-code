@@ -171,91 +171,91 @@ class DRM(object):
             print("Run number:")
             print(i)
             # measured resonant frequency (MHz) and Q-factor, empty, x, 1, before
-            f0_x1_before[i] = DRM.empty_freq_x[i] # Lists start a zero, so there may be some problem with how it
+            f0_x1_before = DRM.empty_freq_x[i] # Lists start a zero, so there may be some problem with how it
             # works with i and num_measurements being set to one on zero, maybe new variable? or is i fine?
-            Q0_x1_before[i] = DRM.empty1_q_x[i]
+            Q0_x1_before = DRM.empty1_q_x[i]
 
             print("Measured Resonant frequency")
-            print("f0_x1_before[i]:")
-            print(f0_x1_before[i])
+            print("f0_x1_before:")
+            print(f0_x1_before)
 
             # measured resonant frequency (MHz) and Q-factor, empty, y, 1, before
-            f0_y1_before[i] = DRM.empty_freq_y[i]
-            Q0_y1_before[i] = DRM.empty1_q_y[i]
+            f0_y1_before = DRM.empty_freq_y[i]
+            Q0_y1_before = DRM.empty1_q_y[i]
 
             # measured resonant frequency (MHz) and Q-factor, empty, z, 1, before
-            f0_z1_before[i] = DRM.empty_freq_z[i]
-            Q0_z1_before[i] = DRM.empty1_q_z[i]
+            f0_z1_before = DRM.empty_freq_z[i]
+            Q0_z1_before = DRM.empty1_q_z[i]
 
             # SPECIMEN 1 (ORIGINAL)
 
             # measured resonant frequency (MHz) and Q-factor, sample 1, x
-            f_x1[i] = DRM.sample_freq_x[i]
-            Q_x1[i] = DRM.sample_q_x[i]
+            f_x1 = DRM.sample_freq_x[i]
+            Q_x1 = DRM.sample_q_x[i]
 
             # measured resonant frequency (MHz) and Q-factor, sample 1, y
-            f_y1[i] = DRM.sample_freq_y[i]
-            Q_y1[i] = DRM.sample_q_y[i]
+            f_y1 = DRM.sample_freq_y[i]
+            Q_y1 = DRM.sample_q_y[i]
 
             # measured resonant frequency (MHz) and Q-factor, sample 1, z
-            f_z1[i] = DRM.sample_freq_z[i]
-            Q_z1[i] = DRM.sample_q_y[i]
+            f_z1 = DRM.sample_freq_z[i]
+            Q_z1 = DRM.sample_q_y[i]
 
             # EMPTY (IN BETWEEN SAMPLES 1 AND 2)
 
             # measured resonant frequency (MHz) and Q-factor, empty, x, 1, after
-            f0_x1_after[i] = DRM.empty1_freq_x[i]
-            Q0_x1_after[i] = DRM.empty2_q_x[i]
+            f0_x1_after = DRM.empty1_freq_x[i]
+            Q0_x1_after = DRM.empty2_q_x[i]
 
             # measured resonant frequency (MHz) and Q-factor, empty, y, 1, after
-            f0_y1_after[i] = DRM.empty1_freq_y[i]
-            Q0_y1_after[i] = DRM.empty2_q_y[i]
+            f0_y1_after = DRM.empty1_freq_y[i]
+            Q0_y1_after = DRM.empty2_q_y[i]
 
             # measured resonant frequency (MHz) and Q-factor, empty, z, 1, after
-            f0_z1_after[i] = DRM.empty1_freq_z[i]
-            Q0_z1_after[i] = DRM.empty2_q_z[i]
+            f0_z1_after = DRM.empty1_freq_z[i]
+            Q0_z1_after = DRM.empty2_q_z[i]
 
             # 'after' for sample 1 is 'before' for sample 2
             # resonant frequency (MHz) and Q-factor, empty, x, 2, before
             # This is all for measuring drift.
-            f0_x2_before[i] = f0_x1_after[i]
-            Q0_x2_before[i] = Q0_x1_after[i]
+            f0_x2_before = f0_x1_after
+            Q0_x2_before = Q0_x1_after
 
             # resonant frequency (MHz) and Q-factor, empty, y, 2, before
-            f0_y2_before[i] = f0_y1_after[i]
-            Q0_y2_before[i] = Q0_y1_after[i]
+            f0_y2_before = f0_y1_after
+            Q0_y2_before = Q0_y1_after
 
             # resonant frequency (MHz) and Q-factor, empty, z, 2, before
-            f0_z2_before[i] = f0_z1_after[i]
-            Q0_z2_before[i] = Q0_z1_after[i]
+            f0_z2_before = f0_z1_after
+            Q0_z2_before = Q0_z1_after
 
             # SAMPLE 2 (REPLICA)
 
             # measured resonant frequency (MHz) and Q-factor, sample 2, x
-            f_x2[i] = DRM.replica_freq_x[i]
-            Q_x2[i] = DRM.replica_q_x[i]
+            f_x2 = DRM.replica_freq_x[i]
+            Q_x2 = DRM.replica_q_x[i]
 
             # measured resonant frequency (MHz) and Q-factor, sample 2, y
-            f_y2[i] = DRM.replica_freq_y[i]
-            Q_y2[i] = DRM.replica_q_y[i]
+            f_y2 = DRM.replica_freq_y[i]
+            Q_y2 = DRM.replica_q_y[i]
 
             # measured resonant frequency (MHz) and Q-factor, sample 2, z
-            f_z2[i] = DRM.replica_freq_z[i]
-            Q_z2[i] = DRM.replica_q_z[i]
+            f_z2 = DRM.replica_freq_z[i]
+            Q_z2 = DRM.replica_q_z[i]
 
             # EMPTY (AT END)
 
             # measured resonant frequency (MHz) and Q-factor, empty, x, 2, after
-            f0_x2_after[i] = DRM.empty2_freq_x[i]
-            Q0_x2_after[i] = DRM.empty3_q_x[i]
+            f0_x2_after = DRM.empty2_freq_x[i]
+            Q0_x2_after = DRM.empty3_q_x[i]
 
             # measured resonant frequency (MHz) and Q-factor, empty, y, 2, after
-            f0_y2_after[i] = DRM.empty2_freq_y[i]
-            Q0_y2_after[i] = DRM.empty3_q_y[i]
+            f0_y2_after = DRM.empty2_freq_y[i]
+            Q0_y2_after = DRM.empty3_q_y[i]
 
             # measured resonant frequency (MHz) and Q-factor, empty, z, 2, after
-            f0_z2_after[i] = DRM.empty2_freq_z[i]
-            Q0_z2_after[i] = DRM.empty3_q_z[i]
+            f0_z2_after = DRM.empty2_freq_z[i]
+            Q0_z2_after = DRM.empty3_q_z[i]
 
             # TIMING
             print("first x measurement")
@@ -264,51 +264,49 @@ class DRM(object):
             try:
                 # weights for f0 and Q0 measured before and after sample 1
 
-                w_x1_before[i] = (self.MeasurementTime[30+measurement] - self.MeasurementTime[15+measurement]) / (
+                w_x1_before = (self.MeasurementTime[30+measurement] - self.MeasurementTime[15+measurement]) / (
                         self.MeasurementTime[30+measurement] - self.MeasurementTime[0+measurement])
-                w_x1_after[i] = (self.MeasurementTime[15+measurement] - self.MeasurementTime[0+measurement]) / (
+                w_x1_after = (self.MeasurementTime[15+measurement] - self.MeasurementTime[0+measurement]) / (
                         self.MeasurementTime[30+measurement] - self.MeasurementTime[0+measurement])
 
-                w_y1_before[i] = (self.MeasurementTime[35+measurement] - self.MeasurementTime[20+measurement]) / (
+                w_y1_before = (self.MeasurementTime[35+measurement] - self.MeasurementTime[20+measurement]) / (
                         self.MeasurementTime[35+measurement] - self.MeasurementTime[5+measurement])
-                w_y1_after[i] = (self.MeasurementTime[20+measurement] - self.MeasurementTime[5+measurement]) / (
+                w_y1_after = (self.MeasurementTime[20+measurement] - self.MeasurementTime[5+measurement]) / (
                         self.MeasurementTime[35+measurement] - self.MeasurementTime[5+measurement])
-                w_z1_before[i] = (self.MeasurementTime[40+measurement] - self.MeasurementTime[25+measurement]) / (
+                w_z1_before = (self.MeasurementTime[40+measurement] - self.MeasurementTime[25+measurement]) / (
                         self.MeasurementTime[40+measurement] - self.MeasurementTime[10+measurement])
-                w_z1_after[i] = (self.MeasurementTime[25+measurement] - self.MeasurementTime[10+measurement]) / (
+                w_z1_after = (self.MeasurementTime[25+measurement] - self.MeasurementTime[10+measurement]) / (
                         self.MeasurementTime[40+measurement] - self.MeasurementTime[10+measurement])
 
                 # weights for f0 and Q0 measured before and after sample 2
-                w_x2_before[i] = (self.MeasurementTime[60+measurement] - self.MeasurementTime[45+measurement]) / (
+                w_x2_before = (self.MeasurementTime[60+measurement] - self.MeasurementTime[45+measurement]) / (
                         self.MeasurementTime[60+measurement] - self.MeasurementTime[30+measurement])
-                w_x2_after[i] = (self.MeasurementTime[45+measurement] - self.MeasurementTime[30+measurement]) / (
+                w_x2_after = (self.MeasurementTime[45+measurement] - self.MeasurementTime[30+measurement]) / (
                         self.MeasurementTime[60+measurement] - self.MeasurementTime[30+measurement])
 
-                w_y2_before[i] = (self.MeasurementTime[65+measurement] - self.MeasurementTime[50+measurement]) / (
+                w_y2_before = (self.MeasurementTime[65+measurement] - self.MeasurementTime[50+measurement]) / (
                         self.MeasurementTime[65+measurement] - self.MeasurementTime[35+measurement])
-                w_y2_after[i] = (self.MeasurementTime[50+measurement] - self.MeasurementTime[35+measurement]) / (
+                w_y2_after = (self.MeasurementTime[50+measurement] - self.MeasurementTime[35+measurement]) / (
                         self.MeasurementTime[65+measurement] - self.MeasurementTime[35+measurement])
 
-                w_z2_before[i] = (self.MeasurementTime[70+measurement] - self.MeasurementTime[55+measurement]) / (
+                w_z2_before = (self.MeasurementTime[70+measurement] - self.MeasurementTime[55+measurement]) / (
                         self.MeasurementTime[70+measurement] - self.MeasurementTime[40+measurement])
-                w_z2_after[i] = (self.MeasurementTime[55+measurement] - self.MeasurementTime[40+measurement]) / (
+                w_z2_after = (self.MeasurementTime[55+measurement] - self.MeasurementTime[40+measurement]) / (
                         self.MeasurementTime[70+measurement] - self.MeasurementTime[40+measurement])
-                break
             except:
-                w_x1_before[i] = 0.5
-                w_x1_after[i] = 0.5
-                w_y1_before[i] = 0.5
-                w_y1_after[i] = 0.5
-                w_z1_before[i] = 0.5
-                w_z1_after[i] = 0.5
-                w_x2_before[i] = 0.5
-                w_x2_after[i] = 0.5
-                w_y2_before[i] = 0.5
-                w_y2_after[i] = 0.5
-                w_z2_before[i] = 0.5
-                w_z2_after[i] = 0.5
-                break
-            # [i] up to here
+                w_x1_before = 0.5
+                w_x1_after = 0.5
+                w_y1_before = 0.5
+                w_y1_after = 0.5
+                w_z1_before = 0.5
+                w_z1_after = 0.5
+                w_x2_before = 0.5
+                w_x2_after = 0.5
+                w_y2_before = 0.5
+                w_y2_after = 0.5
+                w_z2_before = 0.5
+                w_z2_after = 0.5
+
             # EMPTY 1 WEIGHTED AVERAGE
 
             # measured resonant frequency (MHz) and Q-factor, empty, x, 1
@@ -1382,9 +1380,9 @@ class GUI(object):
         self.TempLabelEntry.insert(0, str(self.ENA.temperature))
         self.vs1 = float(self.VS1LabelEntry.get())  # pass volume values, etc.  This line doesn't work why?
         self.vs2 = float(self.VS2LabelEntry.get())
-        self.DielectricResultEntry.insert(0, str(DRM.permittivity_average))
+        self.DielectricResultEntry.insert(0, str(self.ENA.permittivity_average))
         print("Average permittivity:")
-        print(DRM.permittivity_average)
+        print(self.ENA.permittivity_average)
         self.root.mainloop()
 
     def show_info(self):
