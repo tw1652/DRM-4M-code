@@ -20,6 +20,7 @@ num_runs = 1  # Number of measured runs
 class DRM(object):
 
     permittivity_average = 0
+    permittivities = []
 
     XSFreq = 0  # Put these here so XSFreq and XSQ are used in "run" so that it can find it, otherwise has a fit
     XSQ = 0
@@ -84,6 +85,8 @@ class DRM(object):
             ('Replica', 'r'),
             ('Specimen', 's')
         ]
+
+        self.permitvitty_average.set('0.00000')
 
         # Empty chamber frequency 1
         self.YEFreq.set('0.00000')
@@ -157,7 +160,7 @@ class DRM(object):
         self.e_star2.set('0.0000')
 
     def calc_all(self, num_measurements):
-        permittivities = []
+        self.permittivities = []
 
         # volume of cavity
         vc = 0.149 * 0.141 * 0.169
@@ -294,6 +297,7 @@ class DRM(object):
                 w_z2_after = (self.MeasurementTime[55+measurement] - self.MeasurementTime[40+measurement]) / (
                         self.MeasurementTime[70+measurement] - self.MeasurementTime[40+measurement])
             except:
+                print("Weights failed, all set to 0.5")
                 w_x1_before = 0.5
                 w_x1_after = 0.5
                 w_y1_before = 0.5
@@ -391,15 +395,15 @@ class DRM(object):
             # loss tangent of material 1 (original)
             self.tand = -np.imag(self.e_star1) / np.real(self.e_star1)
 
-            permittivities.append(self.e_star1)
+            self.permittivities.append(self.e_star1)
 
             # Add a delay to control the frequency of calculations
             time.sleep(10)  # Adjust the delay time as needed
         print("permittivity list")
-        print(permittivities)
-        permittivity_average = sum(permittivities)/len(permittivities)
+        print(self.permittivities)
+        self.permittivity_average = sum(self.permittivities)/len(self.permittivities)
         print("avg permitivitty")
-        print(permittivity_average)
+        print(self.permittivity_average)
 
 class GUI(object):
 
@@ -1503,8 +1507,8 @@ class GUI(object):
         fh.write("ALPHA1 VOL: %s\n" % self.ENA.alpha1_vol)
         fh.write("ALPHA2 VOL: %s\n" % self.ENA.alpha2_vol)
         fh.write("ALPHA1: %s\n" % self.ENA.alpha1)
-        fh.write("PERMITTIVITIES OF SAMPLE: %s\n" % DRM.permittivities)
-        fh.write("PERMITTIVITY OF SAMPLE %s\n" % DRM.permittivity_average)
+        fh.write("PERMITTIVITIES OF SAMPLE: %s\n" % self.ENA.permittivities)
+        fh.write("PERMITTIVITY OF SAMPLE %s\n" % self.ENA.permittivity_average)
         fh.write("LOSS TANGENT OF MATERIAL: %s\n" % self.ENA.tand)
         fh.write("COMMENTS: %s\n" % self.CommentBox.get("1.0", END))
         msgbox = messagebox.showwarning('File Saved', 'drm_GUI_analysis%s.txt' % j)
